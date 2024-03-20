@@ -11,4 +11,8 @@ app.use('/uploads', express.static('uploads'));
 app.use("/user", userRoute);
 app.use("/images", imageRoute);
 
+app.get('/', (req, res) => {
+    res.send('Server is working');
+});
+
 module.exports = app;
