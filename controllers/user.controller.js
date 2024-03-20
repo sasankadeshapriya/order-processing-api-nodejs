@@ -101,6 +101,7 @@ function login(req, res) {
                             user.update({ otp: otp }).then(updatedUser => {
                                 res.status(200).json({
                                     message: "OTP sent successfully!",
+                                    email: user.email
                                 });
                             }).catch(error => {
                                 console.log(error);
