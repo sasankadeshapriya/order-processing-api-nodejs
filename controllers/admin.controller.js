@@ -5,9 +5,10 @@ const validator = require('fastest-validator');
 const nodemailer = require('nodemailer');
 const otpGenerator = require('otp-generator');
 
+//admin signup
 function signUp(req, res){
     
-    models.User.findOne({where:{email:req.body.email}}).then(result => {
+    models.Admin.findOne({where:{email:req.body.email}}).then(result => {
         if(result){
             res.status(409).json({
                 message: "Email already exists!",
@@ -39,7 +40,7 @@ function signUp(req, res){
                 bcryptjs.hash(user.password, salt, function(err, hash){
                     user.password = hash; 
 
-                    models.User.create(user).then(result => {
+                    models.Admin.create(user).then(result => {
                         res.status(201).json({
                             message: "User created successfully",
                         });
@@ -60,8 +61,9 @@ function signUp(req, res){
     });
 }
 
+//admin login
 function login(req, res) {
-    models.User.findOne({ where: { email: req.body.email } }).then(user => {
+    models.Admin.findOne({ where: { email: req.body.email } }).then(user => {
         if (user === null) {
             res.status(401).json({
                 message: "Invalid credentials!",
@@ -125,10 +127,11 @@ function login(req, res) {
     });
 }
 
+//admin otp
 function verifyOTP(req, res) {
     const { email, otp } = req.body;
 
-    models.User.findOne({ where: { email: email } }).then(user => {
+    models.Admin.findOne({ where: { email: email } }).then(user => {
         if (!user) {
             res.status(404).json({
                 message: "User not found!",
@@ -138,7 +141,8 @@ function verifyOTP(req, res) {
 
                 const token = jwt.sign({
                     email: user.email,
-                    userId: user.id
+                    userId: user.id,
+                    role: 'admin'
                 }, process.env.JWT_KEY, { expiresIn: '1h' });
 
                 res.status(200).json({
@@ -158,10 +162,11 @@ function verifyOTP(req, res) {
     });
 }
 
+//admin otp --when password change---
 function verifyPasswordChangeOTP(req, res) {
     const { email, otp } = req.body;
 
-    models.User.findOne({ where: { email: email } }).then(user => {
+    models.Admin.findOne({ where: { email: email } }).then(user => {
         if (!user) {
             res.status(404).json({
                 message: "User not found!",
@@ -185,10 +190,11 @@ function verifyPasswordChangeOTP(req, res) {
     });
 }
 
+//admin forgot password
 function forgotPassword(req, res) {
     const { email } = req.body;
 
-    models.User.findOne({ where: { email: email } }).then(user => {
+    models.Admin.findOne({ where: { email: email } }).then(user => {
         if (!user) {
             res.status(404).json({
                 message: "User not found!",
@@ -241,6 +247,7 @@ function forgotPassword(req, res) {
     });
 }
 
+//admin change password
 function changePassword(req, res) {
     const { email, newPassword } = req.body;
 
@@ -262,7 +269,7 @@ function changePassword(req, res) {
         });
     }
 
-    models.User.findOne({ where: { email: email } }).then(user => {
+    models.Admin.findOne({ where: { email: email } }).then(user => {
         if (!user) {
             return res.status(404).json({
                 message: "User not found!",
