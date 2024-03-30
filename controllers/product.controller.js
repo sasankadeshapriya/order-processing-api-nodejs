@@ -13,7 +13,7 @@ async function insertProduct(req, res) {
     };
 
     const schema = {
-        name: { type: "string", optional: false, max: 50 },
+        name: { type: "string", optional: false, min:2, max: 50 },
         product_code: { type: "string", optional: false },
         measurement_unit: { type: "enum", values: ['pcs', 'kg', 'lb', 'g'], optional: false },
         description: { type: "string", optional: true },
@@ -32,6 +32,22 @@ async function insertProduct(req, res) {
     }
 
     try {
+        // Check if the product with the same product_code already exists
+        const existingProduct = await models.Product.findOne({ where: { product_code: productData.product_code } });
+        if (existingProduct) {
+            return res.status(409).json({
+                message: "Product with the same product_code already exists"
+            });
+        }
+
+        // Check if the provided measurement_unit is valid
+        if (!schema.measurement_unit.values.includes(productData.measurement_unit)) {
+            return res.status(400).json({
+                message: "Invalid measurement_unit"
+            });
+        }
+
+        // Create the new product
         const newProduct = await models.Product.create(productData);
         res.status(201).json({
             message: "Product created successfully",
@@ -50,15 +66,13 @@ async function updateProduct(req, res) {
     const productId = req.params.productId;
     const updatedProductData = {
         name: req.body.name,
-        product_code: req.body.product_code,
         measurement_unit: req.body.measurement_unit,
         description: req.body.description,
         product_image: req.body.product_image,
     };
 
     const schema = {
-        name: { type: "string", optional: false, max: 50 },
-        product_code: { type: "string", optional: false },
+        name: { type: "string", optional: false, min: 3, max: 50 },
         measurement_unit: { type: "enum", values: ['pcs', 'kg', 'lb', 'g'], optional: false },
         description: { type: "string", optional: true },
         product_image: { type: "string", optional: true },
@@ -75,13 +89,17 @@ async function updateProduct(req, res) {
     }
 
     try {
+        // Create the new product
         const product = await models.Product.findByPk(productId);
         if (!product) {
             return res.status(404).json({
                 message: "Product not found"
             });
         }
+        
+        // Update the product
         await product.update(updatedProductData);
+
         res.status(200).json({
             message: "Product updated successfully",
             product: product

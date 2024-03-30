@@ -12,8 +12,14 @@ module.exports = {
       name: {
         type: Sequelize.STRING
       },
+<<<<<<< Updated upstream:migrations/20240320025217-create-user.js
       email: {
         type: Sequelize.STRING
+=======
+      product_code: {
+        type: Sequelize.STRING,
+        unique: true
+>>>>>>> Stashed changes:migrations/20240328083812-create-product.js
       },
       password: {
         type: Sequelize.STRING
