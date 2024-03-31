@@ -3,7 +3,6 @@ const vehicleController = require('../controllers/vehicle.controller');
 
 const router = express.Router();
 
-// Route to create a new vehicle
 router.post('/', vehicleController.createVehicle);
 router.put('/:vehicleId', vehicleController.updateVehicle);
 router.delete('/:vehicleId', vehicleController.deleteVehicle);
