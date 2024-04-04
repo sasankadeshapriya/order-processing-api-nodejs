@@ -9,6 +9,7 @@ const vehicleRoute = require('./routes/vehicle');
 const routeRoute = require('./routes/route');
 const productRoute = require('./routes/product');
 const batchRoute = require('./routes/batch');
+const commissionRoute = require('./routes/commission');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
@@ -20,6 +21,7 @@ app.use("/vehicle", vehicleRoute);
 app.use("/product", productRoute);
 app.use("/batch", batchRoute);
 app.use("/route", routeRoute);
+app.use("/commission", commissionRoute);
 
 app.get('/', (req, res) => {
     res.send('Server is working');
