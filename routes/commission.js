@@ -3,6 +3,6 @@ const commissionController = require('../controllers/commission.controller');
 
 const router = express.Router();
 
-router.post('/add', commissionController.addCommission);
+router.post('/add', commissionController.addOrUpdateCommission);
 
 module.exports = router;

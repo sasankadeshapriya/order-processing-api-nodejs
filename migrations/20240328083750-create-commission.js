@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.DATE
       },
       commission: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       createdAt: {
         allowNull: false,
