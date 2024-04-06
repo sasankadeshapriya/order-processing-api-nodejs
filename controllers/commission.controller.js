@@ -1,23 +1,21 @@
 const models = require('../models');
-const moment = require('moment'); // Import library for date formatting
+const moment = require('moment'); 
 const Validator = require('fastest-validator');
 
 async function addOrUpdateCommission(req, res) {
-    // Validator schema for request body validation
+    
     const schema = {
         emp_id: { type: "number", positive: true },
-        date: { type: "string", format: "date-time" }, // Date format validation
-        commission: { type: "number", positive: true } // Commission positive number validation
+        date: { type: "string", format: "date-time" }, 
+        commission: { type: "number", positive: true }
     };
 
-    // Custom error messages for validation errors
     const validationMessages = {
         emp_id: "Employee ID must be a positive number",
         date: "Date must be in a valid date-time format",
         commission: "Commission must be a positive number"
     };
 
-    // Create a validator instance
     const v = new Validator();
 
     try {
@@ -63,6 +61,62 @@ async function addOrUpdateCommission(req, res) {
     }
 }
 
+
+
+async function getAllCommissions(req, res) {
+    try {
+        let filterOptions = {};
+
+        // Check if emp_id is provided in the query parameters
+        if (req.query.emp_id) {
+            // Add emp_id filter to the options
+            filterOptions.emp_id = req.query.emp_id;
+        }
+
+        // Check if date range is provided in the query parameters
+        if (req.query.start_date && req.query.end_date) {
+            // Add date range filter to the options
+            filterOptions.date = {
+                [models.Sequelize.Op.between]: [req.query.start_date, req.query.end_date]
+            };
+        } else if (req.query.month) {
+            // Calculate start and end dates for the given month
+            const month = req.query.month;
+            const year = req.query.year || moment().year(); // Use current year if year is not provided
+            const startDate = moment(`${year}-${month}-01`).startOf('month').format('YYYY-MM-DD');
+            const endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+            // Add date range filter to the options
+            filterOptions.date = {
+                [models.Sequelize.Op.between]: [startDate, endDate]
+            };
+        } else if (req.query.year) {
+            // Calculate start and end dates for the given year
+            const year = req.query.year;
+            const startDate = moment(`${year}-01-01`).startOf('year').format('YYYY-MM-DD');
+            const endDate = moment(startDate).endOf('year').format('YYYY-MM-DD');
+
+            // Add date range filter to the options
+            filterOptions.date = {
+                [models.Sequelize.Op.between]: [startDate, endDate]
+            };
+        }
+
+        // Fetch commission records based on the filter options
+        const commissions = await models.Commission.findAll({
+            where: filterOptions
+        });
+
+        // Return the list of commissions in the response
+        return res.status(200).json({ commissions });
+    } catch (error) {
+        console.error("Failed to fetch commissions: ", error);
+        return res.status(500).json({ message: "Failed to fetch commissions" });
+    }
+}
+
+
 module.exports = {
-    addOrUpdateCommission: addOrUpdateCommission
+    addOrUpdateCommission: addOrUpdateCommission,
+    getAllCommissions: getAllCommissions
 }
