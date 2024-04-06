@@ -13,7 +13,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       product_code: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        unique: true
       },
       measurement_unit: {
         type: Sequelize.ENUM('pcs', 'kg', 'lb', 'g')
