@@ -54,12 +54,19 @@ async function createVehicle(req, res) {
     }
 
 //Controller function to update a vehicle
-async function updateVehicle(req,res){
+async function updateVehicle(req, res) {
     const vehicleId = req.params.vehicleId;
     const updateVehicleData = {
         vehicle_no: req.body.vehicle_no, 
         name: req.body.name, 
         type: req.body.type,
+    };
+
+    // Validate if vehicle number is not empty
+    if (!updateVehicleData.vehicle_no) {
+        return res.status(400).json({
+            message: "Vehicle number cannot be empty"
+        });
     }
 
     const schema = {
@@ -71,46 +78,55 @@ async function updateVehicle(req,res){
         },
         name: { type: 'string', optional: true, max: 20 },
         type: { type: 'string', enum: ['Lorry', 'Van'], max: 20 },
-    }
+    };
 
     const validatorInstance = new validator();
-    const validationResponse = validatorInstance.validate(updateVehicleData,schema);
+    const validationResponse = validatorInstance.validate(updateVehicleData, schema);
 
     if(validationResponse !== true){
         return res.status(400).json({
             message: "Validation failed",
-            error:validationResponse
-        })
+            error: validationResponse
+        });
     }
 
-    try{
-
-        const existingVehicle = await models.Vehicle.findOne({ where: { vehicle_no: updateVehicleData.vehicle_no } });
-        if (existingVehicle && existingVehicle.id !== vehicleId) {
-            return res.status(409).json({ message: 'Vehicle number already exists' });
-        }
-
+    try {
         const vehicle = await models.Vehicle.findByPk(vehicleId);
-        if(!vehicle){
+        if (!vehicle) {
             return res.status(404).json({
                 message: "Vehicle not found"
             });
         }
-
+    
+        // Check if the updated vehicle number is different and if it already exists
+        if (updateVehicleData.vehicle_no !== vehicle.vehicle_no) {
+            const existingVehicle = await models.Vehicle.findOne({ 
+                where: { 
+                    vehicle_no: updateVehicleData.vehicle_no,
+                    id: { [models.Sequelize.Op.not]: vehicleId } // Exclude the current vehicle being updated
+                } 
+            });
+            if (existingVehicle) {
+                return res.status(409).json({ message: 'Vehicle number already exists' });
+            }
+        }
+    
         await vehicle.update(updateVehicleData);
-
+    
         res.status(200).json({
-            message:"Vehicle updated successfully",
-            vehicle:vehicle
+            message: "Vehicle updated successfully",
+            vehicle: vehicle
         });
-
-    }catch(error){
+    
+    } catch(error) {
         console.log(error);
         res.status(500).json({
-            message:"Something went wrong!"
+            message: "Something went wrong!"
         });
     }
+    
 }
+
 
 //Controller for deleting a vehicle
 async function deleteVehicle(req,res){
