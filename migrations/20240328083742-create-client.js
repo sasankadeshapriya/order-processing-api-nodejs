@@ -16,26 +16,23 @@ module.exports = {
         type: Sequelize.STRING
       },
       latitude: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(9,6)
       },
       longitude: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(9,6)
       },
       phone_no: {
         type: Sequelize.STRING
-      },
-      outstanding_balance: {
-        type: Sequelize.DECIMAL
       },
       status: {
         type: Sequelize.ENUM('verified', 'not verified'),
         defaultValue: 'not verified'
       },
       discount: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       credit_limit: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10, 2)
       },
       credit_period: {
         type: Sequelize.INTEGER

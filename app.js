@@ -11,6 +11,7 @@ const assignmentRoute = require('./routes/assignment');
 const productRoute = require('./routes/product');
 const batchRoute = require('./routes/batch');
 const commissionRoute = require('./routes/commission');
+const clientRoute = require('./routes/client');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));

@@ -2,35 +2,26 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Employees', {
+    await queryInterface.createTable('Payments', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      name: {
+      reference_number: {
         type: Sequelize.STRING
       },
-      email: {
+      amount: {
+        type: Sequelize.DECIMAL(10,2)
+      },
+      payment_option: {
+        type: Sequelize.ENUM('credit', 'cash', 'cheque', 'cash-half')
+      },
+      notes: {
         type: Sequelize.STRING
       },
-      password: {
-        type: Sequelize.STRING
-      },
-      otp: {
-        type: Sequelize.INTEGER
-      },
-      nic: {
-        type: Sequelize.STRING
-      },
-      phone_no: {
-        type: Sequelize.STRING
-      },
-      commission_rate: {
-        type: Sequelize.DECIMAL(5, 2)
-      },
-      added_by_admin_id: {
+      added_by_employee_id: {
         type: Sequelize.INTEGER
       },
       createdAt: {
@@ -44,6 +35,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Employees');
+    await queryInterface.dropTable('Payments');
   }
 };

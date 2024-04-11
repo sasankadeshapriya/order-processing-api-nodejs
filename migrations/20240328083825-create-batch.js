@@ -21,23 +21,23 @@ module.exports = {
         type: Sequelize.DATEONLY
       },
       buy_price: {
-        type: Sequelize.DECIMAL,
+        type: Sequelize.DECIMAL(10 , 2),
         allowNull: false
       },
       cash_price: {
-        type: Sequelize.DECIMAL,
+        type: Sequelize.DECIMAL(10 , 2),
         allowNull: false
       },
       check_price: {
-        type: Sequelize.DECIMAL,
+        type: Sequelize.DECIMAL(10 , 2),
         allowNull: false
       },
       credit_price: {
-        type: Sequelize.DECIMAL,
+        type: Sequelize.DECIMAL(10 , 2),
         allowNull: false
       },
       quantity: {
-        type: Sequelize.DECIMAL,
+        type: Sequelize.DECIMAL(10 , 2),
         allowNull: false
       },
       expire_date: {
