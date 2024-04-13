@@ -25,6 +25,7 @@ app.use("/batch", batchRoute);
 app.use("/route", routeRoute);
 app.use("/assignment", assignmentRoute);
 app.use("/commission", commissionRoute);
+app.use("/client", clientRoute);
 
 app.get('/', (req, res) => {
     res.send('Server is working');
