@@ -68,32 +68,38 @@ async function updateRoute(req,res){
       });
     }
 
-    try{
-        const existingRoute = await models.Route.findOne({ where: { name: updateRouteData.name } });
-        if (existingRoute && existingRoute.id !== routeId) {
+    try {
+        const existingRoute = await models.Route.findOne({ 
+            where: { 
+                name: updateRouteData.name,
+                id: { [models.Sequelize.Op.not]: routeId } // Exclude the current route's ID
+            } 
+        });
+        if (existingRoute) {
             return res.status(409).json({ message: 'Route name already exists' });
         }
-
+    
         const route = await models.Route.findByPk(routeId);
-        if(!route){
+        if (!route) {
             return res.status(404).json({
                 message: "Route not found"
             });
         }
-
+    
         await route.update(updateRouteData);
-
+    
         res.status(200).json({
-            message:"Route updated successfully",
-            route:route
+            message: "Route updated successfully",
+            route: route
         });
-
-    }catch(error){
+    
+    } catch (error) {
         console.log(error);
         res.status(500).json({
-            message:"Something went wrong!"
+            message: "Something went wrong!"
         });
     }
+    
 }
 
 //Controller for deleting a vehicle
@@ -119,7 +125,7 @@ async function deleteRoute(req,res){
         });
     }
 }
-    //Controller for getting all the vehicles
+    //Controller for getting all the routes
     async function getAllRoutes(req,res){
         try{
             const routes = await models.Route.findAll();
@@ -132,7 +138,7 @@ async function deleteRoute(req,res){
         }
 }
 
-    //Controller for getting a vehicles
+    //Controller for getting a route
     async function getRoute(req,res){
         const routeId = req.params.routeId;
 
