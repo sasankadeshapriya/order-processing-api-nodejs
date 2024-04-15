@@ -13,6 +13,7 @@ const batchRoute = require('./routes/batch');
 const commissionRoute = require('./routes/commission');
 const clientRoute = require('./routes/client');
 const invoiceRoute = require('./routes/invoice');
+const paymentRoute = require('./routes/payment');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
@@ -28,6 +29,7 @@ app.use("/assignment", assignmentRoute);
 app.use("/commission", commissionRoute);
 app.use("/client", clientRoute);
 app.use("/invoice", invoiceRoute);
+app.use("/payment", paymentRoute);
 
 app.get('/', (req, res) => {
     res.send('Server is working');
