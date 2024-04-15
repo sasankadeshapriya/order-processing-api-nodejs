@@ -33,6 +33,16 @@ module.exports = {
       added_by_admin_id: {
         type: Sequelize.INTEGER
       },
+      current_location: {
+        type: Sequelize.STRING 
+      },
+      assigned: {
+        type: Sequelize.BOOLEAN, 
+        defaultValue: false 
+      },
+      profile_picture: { 
+        type: Sequelize.STRING 
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

@@ -21,6 +21,10 @@ module.exports = {
       added_by_admin_id: {
         type: Sequelize.INTEGER
       },
+      assigned: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false 
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
