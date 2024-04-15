@@ -17,6 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     reference_number: DataTypes.STRING,
     amount: DataTypes.DECIMAL(10,2),
     payment_option: DataTypes.ENUM('credit', 'cash', 'cheque', 'cash-half'),
+    state: DataTypes.ENUM('verified', 'not-verified', 'rejected'),
     notes: DataTypes.STRING,
     added_by_employee_id: DataTypes.INTEGER
   }, {

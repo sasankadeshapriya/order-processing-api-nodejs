@@ -18,6 +18,9 @@ module.exports = {
       payment_option: {
         type: Sequelize.ENUM('credit', 'cash', 'cheque', 'cash-half')
       },
+      state: {
+        type: Sequelize.ENUM('verified', 'not-verified', 'rejected')
+      },
       notes: {
         type: Sequelize.STRING
       },
