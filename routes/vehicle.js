@@ -1,19 +1,17 @@
 const express = require('express');
-const routeController = require('../controllers/route.controller');
+const vehicleController = require('../controllers/vehicle.controller');
 
 const router = express.Router();
 
-// Create a new route
-router.post('/', routeController.createRoute);
-// Update the details of an existing route
-router.put('/:routeId', routeController.updateRoute);
-// Update the assigned field of a route
-router.patch('/:routeId/assigned', routeController.updateRouteAssigned);
-// Delete a route
-router.delete('/:routeId', routeController.deleteRoute);
-// Get all routes
-router.get('/', routeController.getAllRoutes);
-// Get details of a specific route
-router.get('/:routeId', routeController.getRoute);
+// Create a new vehicle
+router.post('/', vehicleController.createVehicle);
+// Update the details of an existing vehicle
+router.put('/:vehicleId', vehicleController.updateVehicle);
+// Delete a vehicle
+router.delete('/:vehicleId', vehicleController.deleteVehicle);
+// Get all vehicles
+router.get('/', vehicleController.getAllVehicles);
+// Get details of a specific vehicle
+router.get('/:vehicleId', vehicleController.getVehicle);
 
 module.exports = router;
