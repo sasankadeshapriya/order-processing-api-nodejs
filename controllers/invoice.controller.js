@@ -198,8 +198,68 @@ async function updateInvoice(req, res) {
 }
 
 
+async function deleteInvoice(req, res) {
+    try {
+        const invoiceId = req.params.invoiceId;
+        
+        // Find the invoice by ID
+        const invoice = await models.Invoice.findByPk(invoiceId);
+        
+        if (!invoice) {
+            return res.status(404).json({ message: "Invoice not found" });
+        }
+
+        // Delete associated invoice details using reference_number
+        await models.InvoiceDetail.destroy({ where: { reference_number: invoice.reference_number } });
+
+        // Delete associated payments using reference_number
+        await models.Payment.destroy({ where: { reference_number: invoice.reference_number } });
+
+        // Delete the invoice itself
+        await invoice.destroy();
+
+        res.status(200).json({ message: "Invoice deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting invoice:", error);
+        res.status(500).json({ message: "Failed to delete invoice" });
+    }
+}
+
+// Function to get a single invoice by ID
+async function getInvoiceById(req, res) {
+    try {
+        const invoiceId = req.params.invoiceId;
+        const invoice = await models.Invoice.findByPk(invoiceId, { include: [models.InvoiceDetail, models.Payment] });
+
+        if (!invoice) {
+            return res.status(404).json({ message: "Invoice not found" });
+        }
+
+        res.status(200).json({ invoice });
+    } catch (error) {
+        console.error("Error fetching invoice:", error);
+        res.status(500).json({ message: "Failed to fetch invoice" });
+    }
+}
+
+// Function to get all invoices
+async function getAllInvoices(req, res) {
+    try {
+        const invoices = await models.Invoice.findAll({ include: [models.InvoiceDetail, models.Payment] });
+
+        res.status(200).json({ invoices });
+    } catch (error) {
+        console.error("Error fetching invoices:", error);
+        res.status(500).json({ message: "Failed to fetch invoices" });
+    }
+}
+
+
 
 module.exports = {
     createInvoice:createInvoice,
-    updateInvoice:updateInvoice
+    updateInvoice:updateInvoice,
+    deleteInvoice:deleteInvoice,
+    getInvoiceById:getInvoiceById,
+    getAllInvoices,getAllInvoices
 }
