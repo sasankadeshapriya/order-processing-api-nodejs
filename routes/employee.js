@@ -10,6 +10,10 @@ router.post('/verify-otp', employeeController.verifyOTP);
 router.post('/forgot-password', employeeController.forgotPassword);
 router.post('/password-change-otp', employeeController.verifyPasswordChangeOTP);
 router.post('/password-change', employeeController.changePassword);
+router.get('/all', employeeController.getAllEmployees);
+router.get('/:employeeId/details', employeeController.getEmployeeDetails);
+router.post('/create', employeeController.createEmployee);
+
 
 //test
 const testController = require('../controllers/test.controller');
