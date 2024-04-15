@@ -18,20 +18,23 @@ module.exports = {
       employee_id: {
         type: Sequelize.INTEGER
       },
-      product_id: {
-        type: Sequelize.INTEGER
+      total_amount: {
+        type: Sequelize.DECIMAL(10, 2)
       },
-      batch_id: {
-        type: Sequelize.INTEGER
+      paid_amount: {
+        type: Sequelize.DECIMAL(10, 2)
       },
-      quantity: {
-        type: Sequelize.DECIMAL
+      balance: {
+        type: Sequelize.DECIMAL(10, 2)
+      },
+      discount: {
+        type: Sequelize.DECIMAL(10, 2)
+      },
+      credit_period_end_date: {
+        type: Sequelize.DATE
       },
       payment_option: {
-        type: Sequelize.ENUM('credit', 'cash', 'cheque')
-      },
-      date: {
-        type: Sequelize.DATE
+        type: Sequelize.ENUM('credit', 'cash', 'cheque', 'cash-half')
       },
       createdAt: {
         allowNull: false,

@@ -28,7 +28,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       commission_rate: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(5, 2)
       },
       added_by_admin_id: {
         type: Sequelize.INTEGER

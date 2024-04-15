@@ -21,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
     latitude: DataTypes.DECIMAL(10, 8),
     longitude: DataTypes.DECIMAL(11, 8),
     phone_no: DataTypes.STRING,
-    outstanding_balance: DataTypes.DECIMAL(10, 2),
     status: {
       type: DataTypes.ENUM('verified', 'not verified'),
       defaultValue: 'not verified'
