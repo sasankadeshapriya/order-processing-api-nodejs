@@ -21,7 +21,6 @@ const invoiceSchema = {
     }}}
 };
 
-// Create an invoice along with invoice details
 async function createInvoice(req, res) {
     try {
         const validationResponse = v.validate(req.body, invoiceSchema);
@@ -53,19 +52,41 @@ async function createInvoice(req, res) {
         });
         await Promise.all(invoiceDetailsPromises);
 
+        // If paid_amount is greater than 0 and payment_option is not 'credit', create a payment record
+        let createdPayment = null;
+        if (newInvoice.paid_amount > 0 && newInvoice.payment_option !== 'credit') {
+            const paymentState = newInvoice.payment_option === 'cheque' ? 'not-verified' : 'verified';
+            createdPayment = await models.Payment.create({
+                reference_number: newInvoice.reference_number,
+                amount: newInvoice.paid_amount,
+                payment_option: newInvoice.payment_option,
+                state: paymentState,
+                added_by_employee_id: newInvoice.employee_id
+            });
+        }
+
         // Fetch the newly created invoice with associated products
         const invoiceWithProducts = await models.Invoice.findOne({
             where: { reference_number: newInvoice.reference_number },
             include: [models.InvoiceDetail]
         });
 
-        res.status(201).json({ message: "Invoice created successfully", invoice: invoiceWithProducts });
+        // Prepare response message
+        let message = "Invoice created successfully";
+        let responseData = { invoice: invoiceWithProducts };
+        if (createdPayment) {
+            message += " and payment record created";
+            responseData.payment = createdPayment;
+        }
+
+        res.status(201).json({ message, ...responseData });
     } catch (error) {
         console.error("Error creating invoice:", error);
         res.status(500).json({ message: "Failed to create invoice" });
     }
 }
 
+//update invoice
 async function updateInvoice(req, res) {
     try {
         const invoiceId = req.params.invoiceId;
@@ -82,7 +103,50 @@ async function updateInvoice(req, res) {
 
         // Update the invoice attributes
         const { products, ...invoiceData } = req.body;
+        
+        // Check if at least one product is provided
+        if (!products || products.length === 0) {
+            return res.status(400).json({ message: "At least one product must be provided" });
+        }
+
         await existingInvoice.update(invoiceData);
+
+        // Handle payment record
+        const paymentOption = invoiceData.payment_option;
+        const paidAmount = invoiceData.paid_amount || 0;
+        let paymentState = 'verified';
+        let paymentRecordCreated = false;
+
+        if (paymentOption && paymentOption === 'cheque') {
+            paymentState = 'not-verified';
+        }
+
+        if (paymentOption && paymentOption !== 'credit' && paidAmount > 0) {
+            // Create or update payment record only if paid amount is greater than 0
+            let existingPayment = await models.Payment.findOne({ where: { reference_number: existingInvoice.reference_number } });
+            if (existingPayment) {
+                // Update existing payment record if paid amount is updated
+                await existingPayment.update({
+                    amount: paidAmount,
+                    payment_option: paymentOption,
+                    state: paymentState,
+                    added_by_employee_id: existingInvoice.employee_id
+                });
+            } else {
+                // Create new payment record
+                await models.Payment.create({
+                    reference_number: existingInvoice.reference_number,
+                    amount: paidAmount,
+                    payment_option: paymentOption,
+                    state: paymentState,
+                    added_by_employee_id: existingInvoice.employee_id
+                });
+                paymentRecordCreated = true;
+            }
+        } else if (paymentOption === 'credit' || paidAmount <= 0) {
+            // Delete existing payment record if payment option is updated to 'credit' or paid amount is <= 0
+            await models.Payment.destroy({ where: { reference_number: existingInvoice.reference_number } });
+        }
 
         // Update existing products in the invoice details
         const updatedProductsPromises = existingInvoice.InvoiceDetails.map(async (existingProduct) => {
@@ -94,6 +158,9 @@ async function updateInvoice(req, res) {
                     quantity: updatedProduct.quantity,
                     sum: updatedProduct.sum
                 });
+            } else {
+                // Remove the product if not found in the updated products list
+                await existingProduct.destroy();
             }
         });
         await Promise.all(updatedProductsPromises);
@@ -115,12 +182,22 @@ async function updateInvoice(req, res) {
         // Fetch the updated invoice with associated products
         const updatedInvoice = await models.Invoice.findByPk(invoiceId, { include: [models.InvoiceDetail] });
 
-        res.status(200).json({ message: "Invoice updated successfully", invoice: updatedInvoice });
+        let message = "Invoice updated successfully";
+        if (paymentRecordCreated) {
+            message += ", payment record created";
+        }
+
+        // Fetch payment details if a payment record exists
+        const paymentDetails = await models.Payment.findOne({ where: { reference_number: existingInvoice.reference_number } });
+
+        res.status(200).json({ message, invoice: updatedInvoice, payment: paymentDetails });
     } catch (error) {
         console.error("Error updating invoice:", error);
         res.status(500).json({ message: "Failed to update invoice" });
     }
 }
+
+
 
 module.exports = {
     createInvoice:createInvoice,
