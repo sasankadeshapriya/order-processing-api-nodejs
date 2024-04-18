@@ -14,6 +14,7 @@ const commissionRoute = require('./routes/commission');
 const clientRoute = require('./routes/client');
 const invoiceRoute = require('./routes/invoice');
 const paymentRoute = require('./routes/payment');
+const vehicleInventoryRoute = require('./routes/vehicleInventory');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
@@ -30,6 +31,7 @@ app.use("/commission", commissionRoute);
 app.use("/client", clientRoute);
 app.use("/invoice", invoiceRoute);
 app.use("/payment", paymentRoute);
+app.use("/vehicle-inventory", vehicleInventoryRoute);
 
 app.get('/', (req, res) => {
     res.send('Server is working');

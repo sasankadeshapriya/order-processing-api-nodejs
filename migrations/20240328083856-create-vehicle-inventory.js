@@ -15,11 +15,11 @@ module.exports = {
       product_id: {
         type: Sequelize.INTEGER
       },
-      batch_id: {
-        type: Sequelize.INTEGER
+      sku: {
+        type: Sequelize.STRING
       },
       quantity: {
-        type: Sequelize.DECIMAL
+        type: Sequelize.DECIMAL(10,2)
       },
       added_by_admin_id: {
         type: Sequelize.INTEGER
