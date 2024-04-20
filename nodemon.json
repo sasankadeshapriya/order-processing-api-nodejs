@@ -1,8 +1,15 @@
 {
     "env": {
         "JWT_KEY": "I$^%6szhGUMLNv",
-        "GMAIL_USER": "deshapriyad.sasanka@gmail.com",
-        "GMAIL_PASS": "seex ucjn kjpx uzdf"
+        "EMAIL_USER": "verification@gsutil.xyz",
+        "EMAIL_PASS": "fezem@~*9eR;",
+        "PORT": 4000,
+        "EMAIL_HOST": "mail.gsutil.xyz",
+        "EMAIL_PORT": 465,
+        "DB_USERNAME": "root",
+        "DB_PASSWORD": null,
+        "DB_DATABASE": "order_processing_system",
+        "DB_HOST": "127.0.0.1",
+        "DB_DIALECT": "mysql"
     }
 }
-

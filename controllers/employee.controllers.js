@@ -73,15 +73,16 @@ function login(req, res) {
                     const otp = Math.floor(1000 + Math.random() * 9000);
 
                     const transporter = nodemailer.createTransport({
-                        service: 'gmail',
+                        host: process.env.EMAIL_HOST,
+                        port: process.env.EMAIL_PORT,
                         auth: {
-                            user: process.env.GMAIL_USER,
-                            pass: process.env.GMAIL_PASS
+                            user: process.env.EMAIL_USER,
+                            pass: process.env.EMAIL_PASS
                         }
                     });
 
                     const mailOptions = {
-                        from: process.env.GMAIL_USER,
+                        from: process.env.EMAIL_USER,
                         to: user.email,
                         subject: 'OTP for login verification',
                         text: `Your OTP for login is: ${otp}`
@@ -201,15 +202,16 @@ function forgotPassword(req, res) {
             const otp = Math.floor(1000 + Math.random() * 9000);
 
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
                 auth: {
-                    user: process.env.GMAIL_USER,
-                    pass: process.env.GMAIL_PASS
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
                 }
             });
 
             const mailOptions = {
-                from: process.env.GMAIL_USER,
+                from: process.env.EMAIL_USER,
                 to: user.email,
                 subject: 'OTP for Password Reset',
                 text: `Your OTP for password reset is: ${otp}`
