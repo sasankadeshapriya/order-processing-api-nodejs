@@ -261,5 +261,5 @@ module.exports = {
     updateInvoice:updateInvoice,
     deleteInvoice:deleteInvoice,
     getInvoiceById:getInvoiceById,
-    getAllInvoices,getAllInvoices
+    getAllInvoices:getAllInvoices
 }
