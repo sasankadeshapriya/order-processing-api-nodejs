@@ -341,7 +341,10 @@ async function getEmployeeDetails(req, res) {
         const employeeId = req.params.employeeId;
 
         // Find the employee by ID in the database
-        const employee = await models.Employee.findByPk(employeeId);
+        const employee = await models.Employee.findByPk(employeeId, {
+            attributes: ['id', 'name', 'email', 'password', 'otp', 'nic', 'phone_no', 'commission_rate', 'current_location', 'assigned', 'profile_picture'], // Include only necessary fields
+            raw: true // Get raw data instead of Sequelize instances
+        });
 
         // If employee with the given ID is not found
         if (!employee) {
@@ -355,6 +358,7 @@ async function getEmployeeDetails(req, res) {
         res.status(500).json({ message: "Failed to fetch employee details" });
     }
 }
+
 
 // Employee creation function
 async function createEmployee(req, res) {
@@ -410,7 +414,45 @@ async function createEmployee(req, res) {
     }
 }
 
+async function updateEmployeeLocation(req, res) {
+    try {
+        const employeeId = req.params.employeeId;
+        const locationData = req.body;
 
+        console.log("Received location data:", locationData); // Debug print
+
+        // Find the employee by ID in the database
+        const employee = await models.Employee.findByPk(employeeId);
+
+        console.log("Employee found:", employee); // Debug print
+
+        // If employee with the given ID is not found
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        // Convert location data to JSON string
+        const locationJsonString = JSON.stringify(locationData);
+
+        console.log("Location JSON string:", locationJsonString); // Debug print
+
+        // Update employee's current_location field with the provided location data
+        employee.current_location = locationJsonString;
+
+        console.log("Updated employee:", employee); // Debug print
+
+        // Save the updated employee data
+        await employee.save();
+
+        console.log("Employee saved successfully."); // Debug print
+
+        // Return success response
+        res.status(200).json({ message: "Employee location updated successfully", employee: employee });
+    } catch (error) {
+        console.error("Error updating employee location:", error);
+        res.status(500).json({ message: "Failed to update employee location" });
+    }
+}
 
 module.exports = {
     signUp: signUp,
@@ -421,5 +463,6 @@ module.exports = {
     changePassword:changePassword,
     getAllEmployees: getAllEmployees,
     getEmployeeDetails: getEmployeeDetails,
-    createEmployee: createEmployee
-} 
+    createEmployee: createEmployee,
+    updateEmployeeLocation: updateEmployeeLocation
+}
