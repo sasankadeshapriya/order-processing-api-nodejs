@@ -24,8 +24,11 @@ module.exports = (sequelize, DataTypes) => {
     nic: DataTypes.STRING,
     phone_no: DataTypes.STRING,
     commission_rate: DataTypes.DECIMAL(10, 2),
-    added_by_admin_id: DataTypes.INTEGER
-  }, {
+    added_by_admin_id: DataTypes.INTEGER,
+    current_location: DataTypes.STRING,
+    profile_picture: DataTypes.STRING
+  }, 
+  {
     sequelize,
     modelName: 'Employee',
   });
