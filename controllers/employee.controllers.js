@@ -16,13 +16,27 @@ function signUp(req, res){
             const user = {
                 name: req.body.name,
                 email:req.body.email,
-                password: req.body.password 
+                password: req.body.password,
+                nic: req.body.nic,
+                phone_no: req.body.phone_no,
+                commission_rate: req.body.commission_rate,
+                added_by_admin_id: req.body.added_by_admin_id,
+                current_location: req.body.current_location || null,
+                assigned: req.body.assigned || false,
+                profile_picture: req.body.profile_picture || null
             }
             
             const schema = {
                 name: { type: "string", optional: false, max: 50, pattern: /^[a-zA-Z\s]+$/ },
                 email: { type: "email", optional: false, max: 35 },
-                password: { type: "string", optional: false, min: 8 }
+                password: { type: "string", optional: false, min: 8 },
+                nic: { type: "string", optional: false }, 
+                phone_no: { type: "string", optional: false },
+                commission_rate: { type: "number", optional: false }, 
+                added_by_admin_id: { type: "number", optional: false }, 
+                current_location: { type: "string", optional: true }, 
+                assigned: { type: "boolean", optional: true },
+                profile_picture: { type: "string", optional: true }
             };
             
             const vldator = new validator();
@@ -318,7 +332,7 @@ async function getAllEmployees(req, res) {
     try {
         // Fetch all employees from the database, including their assigned status
         const employees = await models.Employee.findAll({
-            attributes: ['id', 'name','email','password','otp','nic','phone_no','commission_rate','current_location', 'assigned','profile_picture'], // Include only necessary fields
+            attributes: ['name','email','nic','phone_no','commission_rate','assigned','profile_picture'], // Include only necessary fields
             raw: true // Get raw data instead of Sequelize instances
         });
 
@@ -344,7 +358,7 @@ async function getEmployeeDetails(req, res) {
 
         // Find the employee by ID in the database
         const employee = await models.Employee.findByPk(employeeId, {
-            attributes: ['id', 'name', 'email', 'password', 'otp', 'nic', 'phone_no', 'commission_rate', 'current_location', 'assigned', 'profile_picture'], // Include only necessary fields
+            attributes: ['id', 'name', 'email', 'nic', 'phone_no', 'commission_rate', 'current_location', 'assigned', 'profile_picture'], // Include only necessary fields
             raw: true // Get raw data instead of Sequelize instances
         });
 
@@ -361,61 +375,7 @@ async function getEmployeeDetails(req, res) {
     }
 }
 
-
-// Employee creation function
-async function createEmployee(req, res) {
-    try {
-        // Check if the email already exists
-        const existingEmployee = await models.Employee.findOne({ where: { email: req.body.email } });
-        if (existingEmployee) {
-            return res.status(409).json({ message: "Email already exists" });
-        }
-
-        // Define schema for employee data validation
-        const employeeSchema = {
-            name: { type: "string", optional: false },
-            email: { type: "email", optional: false },
-            password: { type: "string", optional: false, min: 8 }
-            // Add more fields as needed
-        };
-
-        // Validate request body against schema
-        const v = new validator();
-        const validationResponse = v.validate(req.body, employeeSchema);
-        if (validationResponse !== true) {
-            return res.status(400).json({ message: "Validation failed", errors: validationResponse });
-        }
-
-        // Hash the password
-        bcryptjs.genSalt(10, function(err, salt) {
-            if (err) {
-                return res.status(500).json({ message: "Error generating salt for hashing" });
-            }
-            bcryptjs.hash(req.body.password, salt, function(err, hash) {
-                if (err) {
-                    return res.status(500).json({ message: "Error hashing the password" });
-                }
-
-                // Create the employee
-                models.Employee.create({
-                    name: req.body.name,
-                    email: req.body.email,
-                    password: hash
-                    // Add more fields as needed
-                }).then(newEmployee => {
-                    res.status(201).json({ message: "Employee created successfully", employee: newEmployee });
-                }).catch(error => {
-                    console.error("Error creating employee:", error);
-                    res.status(500).json({ message: "Failed to create employee" });
-                });
-            });
-        });
-    } catch (error) {
-        console.error("Error creating employee:", error);
-        res.status(500).json({ message: "Failed to create employee" });
-    }
-}
-
+//update employee locations
 async function updateEmployeeLocation(req, res) {
     try {
         const employeeId = req.params.employeeId;
@@ -465,6 +425,5 @@ module.exports = {
     changePassword:changePassword,
     getAllEmployees: getAllEmployees,
     getEmployeeDetails: getEmployeeDetails,
-    createEmployee: createEmployee,
     updateEmployeeLocation: updateEmployeeLocation
 }
