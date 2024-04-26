@@ -12,7 +12,6 @@ router.post('/password-change-otp', employeeController.verifyPasswordChangeOTP);
 router.post('/password-change', employeeController.changePassword);
 router.get('/all', employeeController.getAllEmployees);
 router.get('/:employeeId/details', employeeController.getEmployeeDetails);
-router.post('/create', employeeController.createEmployee);
 router.put('/:employeeId/update/location', employeeController.updateEmployeeLocation);
 router.get('/:employeeId/location', employeeController.getEmployeeLocation);
 
