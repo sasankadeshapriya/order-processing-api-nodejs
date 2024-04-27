@@ -449,7 +449,6 @@ module.exports = {
     changePassword:changePassword,
     getAllEmployees: getAllEmployees,
     getEmployeeDetails: getEmployeeDetails,
-    updateEmployeeLocation: updateEmployeeLocation
     updateEmployeeLocation: updateEmployeeLocation,
     getEmployeeLocation: getEmployeeLocation
 }
