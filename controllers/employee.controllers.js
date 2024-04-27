@@ -416,6 +416,30 @@ async function updateEmployeeLocation(req, res) {
     }
 }
 
+async function getEmployeeLocation(req, res) {
+    try {
+        const employeeId = req.params.employeeId;
+
+        // Find the employee by ID in the database
+        const employee = await models.Employee.findByPk(employeeId);
+
+        // If the employee with the given ID is not found
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        // Parse the location data from the stored JSON string
+        const locationData = JSON.parse(employee.current_location);
+
+        // Return the location data
+        res.status(200).json({ location: locationData });
+    } catch (error) {
+        console.error("Error retrieving employee location:", error);
+        res.status(500).json({ message: "Failed to retrieve employee location" });
+    }
+}
+
+
 module.exports = {
     signUp: signUp,
     login: login,
@@ -426,4 +450,6 @@ module.exports = {
     getAllEmployees: getAllEmployees,
     getEmployeeDetails: getEmployeeDetails,
     updateEmployeeLocation: updateEmployeeLocation
+    updateEmployeeLocation: updateEmployeeLocation,
+    getEmployeeLocation: getEmployeeLocation
 }
