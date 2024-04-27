@@ -52,7 +52,7 @@ function insertVehicleInventory(req, res) {
             }
 
             // Find existing vehicle inventory with the same SKU and product ID
-            models.Vehicle_inventory.findOne({ where: { sku: data.sku, product_id: data.product_id } })
+            models.Vehicle_inventory.findOne({ where: { assignment_id:data.assignment_id, sku: data.sku, product_id: data.product_id } })
                 .then(vehicleInventory => {
                     if (vehicleInventory) {
                         // If record already exists, update its quantity
