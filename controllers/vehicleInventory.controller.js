@@ -315,6 +315,33 @@ function deleteVehicleInventory(req, res) {
 }
 
 // get by id
+// function getAllVehicleInventories(req, res) {
+//     const { in_stock } = req.query;
+//     let filter = {};
+    
+//     if (in_stock && in_stock.toLowerCase() === 'true') {
+//         filter.quantity = { [Op.gt]: 0 }; // Filter for quantity greater than 0
+//     }
+
+//     // Find all vehicle inventories matching the filter
+//     models.Vehicle_inventory.findAll({ where: filter })
+//         .then(vehicleInventories => {
+//             res.status(200).json({
+//                 success: true,
+//                 message: 'Vehicle inventories retrieved successfully',
+//                 vehicleInventories: vehicleInventories
+//             });
+//         })
+//         .catch(error => {
+//             console.log(error);
+//             res.status(500).json({
+//                 success: false,
+//                 message: 'Failed to retrieve vehicle inventories'
+//             });
+//         });
+// }
+
+// get all vehicle inventories with detailed information
 function getAllVehicleInventories(req, res) {
     const { in_stock } = req.query;
     let filter = {};
@@ -323,51 +350,103 @@ function getAllVehicleInventories(req, res) {
         filter.quantity = { [Op.gt]: 0 }; // Filter for quantity greater than 0
     }
 
-    // Find all vehicle inventories matching the filter
-    models.Vehicle_inventory.findAll({ where: filter })
-        .then(vehicleInventories => {
-            res.status(200).json({
-                success: true,
-                message: 'Vehicle inventories retrieved successfully',
-                vehicleInventories: vehicleInventories
-            });
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({
-                success: false,
-                message: 'Failed to retrieve vehicle inventories'
-            });
+    // Find all vehicle inventories matching the filter and include related data
+    models.Vehicle_inventory.findAll({
+        where: filter,
+        include: [{
+            model: models.Assignment,
+            include: [
+                { model: models.Employee },
+                { model: models.Vehicle },
+                { model: models.Route }
+            ]
+        }, {
+            model: models.Product
+        }]
+    })
+    .then(vehicleInventories => {
+        res.status(200).json({
+            success: true,
+            message: 'Vehicle inventories retrieved successfully',
+            vehicleInventories: vehicleInventories
         });
+    })
+    .catch(error => {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve vehicle inventories'
+        });
+    });
 }
 
+
 // get all
+// function getVehicleInventoryById(req, res) {
+//     const vehicleInventoryId = req.params.vehicleInventoryId;
+
+//     // Find vehicle inventory by ID
+//     models.Vehicle_inventory.findByPk(vehicleInventoryId)
+//         .then(vehicleInventory => {
+//             if (!vehicleInventory) {
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: 'Vehicle inventory not found for the specified ID'
+//                 });
+//             }
+
+//             res.status(200).json({
+//                 success: true,
+//                 message: 'Vehicle inventory retrieved successfully',
+//                 vehicleInventory: vehicleInventory
+//             });
+//         })
+//         .catch(error => {
+//             console.log(error);
+//             res.status(500).json({
+//                 success: false,
+//                 message: 'Failed to retrieve vehicle inventory'
+//             });
+//         });
+// }
+// get a single vehicle inventory by id with detailed information
 function getVehicleInventoryById(req, res) {
     const vehicleInventoryId = req.params.vehicleInventoryId;
 
-    // Find vehicle inventory by ID
-    models.Vehicle_inventory.findByPk(vehicleInventoryId)
-        .then(vehicleInventory => {
-            if (!vehicleInventory) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'Vehicle inventory not found for the specified ID'
-                });
-            }
-
-            res.status(200).json({
-                success: true,
-                message: 'Vehicle inventory retrieved successfully',
-                vehicleInventory: vehicleInventory
-            });
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(500).json({
+    // Find vehicle inventory by ID and include related data
+    models.Vehicle_inventory.findByPk(vehicleInventoryId, {
+        include: [{
+            model: models.Assignment,
+            include: [
+                { model: models.Employee },
+                { model: models.Vehicle },
+                { model: models.Route }
+            ]
+        }, {
+            model: models.Product
+        }]
+    })
+    .then(vehicleInventory => {
+        if (!vehicleInventory) {
+            return res.status(404).json({
                 success: false,
-                message: 'Failed to retrieve vehicle inventory'
+                message: 'Vehicle inventory not found for the specified ID'
             });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Vehicle inventory retrieved successfully',
+            vehicleInventory: vehicleInventory
         });
+    })
+    .catch(error => {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve vehicle inventory'
+        });
+    });
 }
 
 module.exports = {
