@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 // Define schema for validation
 const schema = {
-    quantity: { type: 'number', positive: true, integer: true, optional: false },
+    quantity: { type: 'number', positive: true, integer: false, optional: false },
     sku: { type: 'string', optional: false },
     product_id: { type: 'number', positive: true, integer: true, optional: false },
     added_by_admin_id: { type: 'number', positive: true, integer: true, optional: false },
