@@ -16,6 +16,7 @@ const invoiceRoute = require('./routes/invoice');
 const paymentRoute = require('./routes/payment');
 const vehicleInventoryRoute = require('./routes/vehicleInventory');
 const fetchDataRoute = require('./routes/fetchData');
+const salesRoute = require('./routes/sales');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
@@ -34,6 +35,7 @@ app.use("/invoice", invoiceRoute);
 app.use("/payment", paymentRoute);
 app.use("/vehicle-inventory", vehicleInventoryRoute);
 app.use("/fetchdata", fetchDataRoute);
+app.use("/sales", salesRoute);
 
 app.get('/', (req, res) => {
     res.send('Server is working');
