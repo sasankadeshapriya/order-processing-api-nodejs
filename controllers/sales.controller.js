@@ -18,8 +18,8 @@ async function getSalesReport(req, res) {
                 [Op.between]: [startDate, endDate]
             };
         } else if (req.query.day) {
-            const startDate = moment().startOf('day').format('YYYY-MM-DD');
-            const endDate = moment().endOf('day').format('YYYY-MM-DD');
+            const startDate = moment().startOf('day').format('YYYY-MM-DD HH:mm:ss');
+            const endDate = moment().endOf('day').format('YYYY-MM-DD HH:mm:ss');
             filterOptions.createdAt = {
                 [Op.between]: [startDate, endDate]
             };
@@ -42,7 +42,7 @@ async function getSalesReport(req, res) {
             include: [
                 {
                     model: models.Client,
-                    attributes: ['name']
+                    attributes: ['name','id']
                 }
             ],
             where: filterOptions,
@@ -60,14 +60,10 @@ async function getSalesReport(req, res) {
         };
 
         sales.forEach(sale => {
-            totalSalesSum += parseFloat(sale.total_amount);
-            totalPaidSum += parseFloat(sale.paid_amount);
-            totalBalanceSum += parseFloat(sale.balance);
-            if (sale.payment_option === 'cash-half') {
-                paymentOptionCounts['credit']++;
-            } else {
-                paymentOptionCounts[sale.payment_option]++;
-            }
+            totalSalesSum += parseFloat(sale.total_amount) || 0;
+            totalPaidSum += parseFloat(sale.paid_amount) || 0;
+            totalBalanceSum += parseFloat(sale.balance) || 0;
+            paymentOptionCounts[sale.payment_option]++;
         });
 
         totalSalesSum = parseFloat(totalSalesSum.toFixed(2));
@@ -92,13 +88,13 @@ async function getSalesReport(req, res) {
 
         // Return the sales report in the response
         return res.status(200).json({
-            sales,
+            sales: sales.length ? sales : null,
             totalSalesSum,
             totalPaidSum,
             totalBalanceSum,
             paymentOptionPercentages,
             previousPeriodSums,
-            mostSoldProducts,
+            mostSoldProducts: mostSoldProducts.length ? mostSoldProducts : null,
             salesComparison,
             paidComparison,
             balanceComparison
@@ -134,9 +130,9 @@ async function calculatePreviousPeriodSums(currentFilterOptions) {
     let previousTotalBalanceSum = 0;
 
     previousSales.forEach(sale => {
-        previousTotalSalesSum += parseFloat(sale.total_amount);
-        previousTotalPaidSum += parseFloat(sale.paid_amount);
-        previousTotalBalanceSum += parseFloat(sale.balance);
+        previousTotalSalesSum += parseFloat(sale.total_amount) || 0;
+        previousTotalPaidSum += parseFloat(sale.paid_amount) || 0;
+        previousTotalBalanceSum += parseFloat(sale.balance) || 0;
     });
 
     previousTotalSalesSum = parseFloat(previousTotalSalesSum.toFixed(2));
