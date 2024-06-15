@@ -36,6 +36,20 @@ async function createAssignment(req, res) {
     }
 
     try {
+        // Check if this employee is already assigned on the same date
+        const dailyEmployeeAssignmentCheck = await models.Assignment.findOne({
+            where: {
+                employee_id: assignData.employee_id,
+                assign_date: assignData.assign_date
+            }
+        });
+
+        if (dailyEmployeeAssignmentCheck) {
+            return res.status(400).json({
+                message: `This employee is already assigned to a task on ${assignDate.toISOString().split('T')[0]}.`,
+            });
+        }
+
         // Check if an assignment already exists for the same employee, vehicle, route, and date
         const existingAssignment = await models.Assignment.findOne({
             where: {
@@ -48,8 +62,7 @@ async function createAssignment(req, res) {
 
         if (existingAssignment) {
             return res.status(400).json({
-                message: "Assignment already exists",
-                error: `An assignment already exists for employee ${assignData.employee_id}, vehicle ${assignData.vehicle_id}, route ${assignData.route_id}, and date ${assignData.assign_date}`
+                message: `An assignment already exists for employee id: ${assignData.employee_id}, vehicle id:${assignData.vehicle_id}, route id: ${assignData.route_id}, and date ${assignData.assign_date}.`,
             });
         }
 
@@ -65,8 +78,7 @@ async function createAssignment(req, res) {
 
         if (conflictingAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Another employee is already assigned to route ${assignData.route_id} and vehicle ${assignData.vehicle_id} on ${assignData.assign_date}`
+                message: `Another employee is already assigned to route id: ${assignData.route_id} and vehicle id: ${assignData.vehicle_id} on ${assignData.assign_date}.`,
             });
         }
 
@@ -81,12 +93,11 @@ async function createAssignment(req, res) {
 
         if (conflictingVehicleAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Another vehicle is already assigned to route ${assignData.route_id} on ${assignData.assign_date}`
+                message: `Another vehicle is already assigned to route ${assignData.route_id} on ${assignData.assign_date}.`,
             });
         }
 
-        // Check if the vehicle is already assigned to a speciic day
+        // Check if the vehicle is already assigned to a specific day
         const conflictingSameVehicleAssignment = await models.Assignment.findOne({
             where: {
                 assign_date: assignData.assign_date,
@@ -96,8 +107,7 @@ async function createAssignment(req, res) {
 
         if (conflictingSameVehicleAssignment && conflictingSameVehicleAssignment.route_id !== assignData.route_id) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `The vehicle is already assigned to a different route on ${assignData.assign_date}`
+                message: `The vehicle is already assigned to a different route on ${assignData.assign_date}.`,
             });
         }
 
@@ -172,8 +182,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingEmployeeAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Employee ${updatedAssignData.employee_id} is already assigned on ${updatedAssignData.assign_date}`
+                message: `Employee id: ${updatedAssignData.employee_id} is already assigned on ${updatedAssignData.assign_date}`,
             });
         }
 
@@ -188,8 +197,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingVehicleAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Vehicle ${updatedAssignData.vehicle_id} is already assigned on ${updatedAssignData.assign_date}`
+                message: `Vehicle id: ${updatedAssignData.vehicle_id} is already assigned on ${updatedAssignData.assign_date}`,
             });
         }
 
@@ -204,8 +212,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingRouteAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Route ${updatedAssignData.route_id} is already assigned on ${updatedAssignData.assign_date}`
+                message: `Route id:${updatedAssignData.route_id} is already assigned on ${updatedAssignData.assign_date}`,
             });
         }
 
