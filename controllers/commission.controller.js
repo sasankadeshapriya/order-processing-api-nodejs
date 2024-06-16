@@ -41,8 +41,11 @@ async function addOrUpdateCommission(req, res) {
 
         if (existingCommission) {
             console.log("Record found for emp_id", emp_id, "and date", formattedDate);
-            // If a record exists, update the commission amount
-            existingCommission.commission = roundedCommission;
+            // Ensure existingCommission.commission is a number
+            const existingCommissionValue = parseFloat(existingCommission.commission);
+            // If a record exists, update the commission amount by adding the new value
+            const updatedCommission = parseFloat((existingCommissionValue + roundedCommission).toFixed(2));
+            existingCommission.commission = updatedCommission;
             await existingCommission.save();
             return res.status(200).json({ message: "Commission updated successfully", commission: existingCommission });
         } else {
@@ -60,7 +63,6 @@ async function addOrUpdateCommission(req, res) {
         return res.status(500).json({ message: "Failed to add/update commission" });
     }
 }
-
 
 
 async function getAllCommissions(req, res) {
