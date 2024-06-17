@@ -5,8 +5,9 @@ const router = express.Router();
 
 router.post('/add', commissionController.addOrUpdateCommission);
 router.get('/', commissionController.getAllCommissions);
+router.get('/emp/:empId', commissionController.getCommissionsByEmpId);
 
-module.exports = router;
+module.exports = router; 
 
 // GET /commission
 // GET /commission?emp_id=1
