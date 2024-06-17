@@ -117,8 +117,25 @@ async function getAllCommissions(req, res) {
     }
 }
 
+async function getCommissionsByEmpId(req, res) {
+    try {
+      const empId = req.params.empId;
+      const commissions = await models.Commission.findAll({
+        where: { emp_id: empId }
+      });
+      if (commissions.length === 0) {
+        return res.status(404).json({ message: "No commissions found for employee ID " + empId });
+      }
+      return res.status(200).json({ commissions });
+    } catch (error) {
+      console.error("Failed to fetch commissions by emp ID: ", error);
+      return res.status(500).json({ message: "Failed to fetch commissions by emp ID" });
+    }
+  }
+
 
 module.exports = {
     addOrUpdateCommission: addOrUpdateCommission,
-    getAllCommissions: getAllCommissions
+    getAllCommissions: getAllCommissions,
+    getCommissionsByEmpId: getCommissionsByEmpId
 }
