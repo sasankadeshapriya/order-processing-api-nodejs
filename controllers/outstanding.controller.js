@@ -11,36 +11,47 @@ async function getClientsWithOutstandingBalances(req, res) {
         switch (filter) {
             case 'day':
                 dateFilter = {
-                    [Op.gte]: moment().startOf('day').toDate(),
-                    [Op.lt]: moment().endOf('day').toDate()
+                    createdAt: {
+                        [Op.gte]: moment().startOf('day').toDate(),
+                        [Op.lt]: moment().endOf('day').toDate()
+                    }
                 };
                 break;
             case 'week':
                 dateFilter = {
-                    [Op.gte]: moment().startOf('week').toDate(),
-                    [Op.lt]: moment().endOf('week').toDate()
+                    createdAt: {
+                        [Op.gte]: moment().startOf('week').toDate(),
+                        [Op.lt]: moment().endOf('week').toDate()
+                    }
                 };
                 break;
             case 'month':
                 dateFilter = {
-                    [Op.gte]: moment().startOf('month').toDate(),
-                    [Op.lt]: moment().endOf('month').toDate()
+                    createdAt: {
+                        [Op.gte]: moment().startOf('month').toDate(),
+                        [Op.lt]: moment().endOf('month').toDate()
+                    }
                 };
                 break;
             case 'year':
                 dateFilter = {
-                    [Op.gte]: moment().startOf('year').toDate(),
-                    [Op.lt]: moment().endOf('year').toDate()
+                    createdAt: {
+                        [Op.gte]: moment().startOf('year').toDate(),
+                        [Op.lt]: moment().endOf('year').toDate()
+                    }
                 };
                 break;
             case 'all':
+                // No date filter for 'all'
                 dateFilter = {};
                 break;
             case 'custom':
                 if (start_date && end_date) {
                     dateFilter = {
-                        [Op.gte]: moment(start_date).startOf('day').toDate(),
-                        [Op.lt]: moment(end_date).endOf('day').toDate()
+                        createdAt: {
+                            [Op.gte]: moment(start_date).startOf('day').toDate(),
+                            [Op.lt]: moment(end_date).endOf('day').toDate()
+                        }
                     };
                 } else {
                     return res.status(400).json({ message: "Custom range requires start_date and end_date" });
@@ -48,8 +59,10 @@ async function getClientsWithOutstandingBalances(req, res) {
                 break;
             default:
                 dateFilter = {
-                    [Op.gte]: moment().startOf('month').toDate(),
-                    [Op.lt]: moment().endOf('month').toDate()
+                    createdAt: {
+                        [Op.gte]: moment().startOf('month').toDate(),
+                        [Op.lt]: moment().endOf('month').toDate()
+                    }
                 };
                 break;
         }
@@ -60,7 +73,7 @@ async function getClientsWithOutstandingBalances(req, res) {
                 balance: {
                     [Op.gt]: 0.00
                 },
-                createdAt: dateFilter
+                ...dateFilter
             },
             attributes: [
                 'client_id',
