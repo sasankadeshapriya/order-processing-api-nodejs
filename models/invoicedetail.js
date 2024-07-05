@@ -16,12 +16,14 @@ module.exports = (sequelize, DataTypes) => {
   InvoiceDetail.init({
     reference_number: DataTypes.STRING,
     product_id: DataTypes.INTEGER,
-    batch_id: DataTypes.INTEGER,
+    batch_id: DataTypes.STRING,
     quantity: DataTypes.DECIMAL(10 , 2),
-    sum: DataTypes.DECIMAL(10 , 2)
+    sum: DataTypes.DECIMAL(10 , 2),
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'InvoiceDetail',
+    paranoid: true
   });
   return InvoiceDetail;
 };

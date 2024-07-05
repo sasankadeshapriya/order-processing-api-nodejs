@@ -139,6 +139,7 @@ async function deleteRoute(req,res){
             });
         }
 
+        //softdelete 
         await route.destroy();
         res.status(200).json({
             message:"Route deleted successfully"

@@ -18,10 +18,12 @@ module.exports = (sequelize, DataTypes) => {
     vehicle_no: DataTypes.STRING,
     name: DataTypes.STRING,
     type: DataTypes.STRING,
-    added_by_admin_id: DataTypes.INTEGER
+    added_by_admin_id: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Vehicle',
+    paranoid: true
   });
   return Vehicle;
 };

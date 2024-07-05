@@ -166,6 +166,7 @@ async function deleteVehicle(req,res){
             });
         }
 
+        //softdelete --> vehicle
         await vehicle.destroy();
         res.status(200).json({
             message: "Product deleted successfully"

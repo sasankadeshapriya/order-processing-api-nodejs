@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Product.belongsTo(models.Admin, { foreignKey: 'added_by_admin_id' });
       Product.hasMany(models.Batch, { foreignKey: 'product_id' });
+      Product.hasMany(models.Vehicle_inventory, { foreignKey: 'product_id' });
     }
   }
   Product.init({
@@ -24,6 +25,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Product',
+    paranoid: true
   });
   return Product;
 };

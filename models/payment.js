@@ -19,10 +19,12 @@ module.exports = (sequelize, DataTypes) => {
     payment_option: DataTypes.ENUM('credit', 'cash', 'cheque', 'cash-half'),
     state: DataTypes.ENUM('verified', 'not-verified', 'rejected'),
     notes: DataTypes.STRING,
-    added_by_employee_id: DataTypes.INTEGER
+    added_by_employee_id: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Payment',
+    paranoid: true
   });
   return Payment;
 };

@@ -144,7 +144,7 @@ async function deletePayment(req, res) {
         const newBalance = parseFloat(invoice.total_amount) - newPaidAmount;
         await invoice.update({ paid_amount: newPaidAmount, balance: newBalance });
 
-        // Delete the payment record
+        // Delete the payment record with softdelete
         await payment.destroy();
 
         res.status(200).json({ message: "Payment deleted successfully" });

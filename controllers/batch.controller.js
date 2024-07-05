@@ -148,6 +148,10 @@ async function deleteBatch(req, res) {
                 message: "Batch not found"
             });
         }
+
+        // Soft delete related vehicle inventories
+        await models.Vehicle_inventory.update({ deletedAt: new Date() }, { where: { sku: batch.sku } });
+
         await batch.destroy();
         res.status(200).json({
             message: "Batch deleted successfully"

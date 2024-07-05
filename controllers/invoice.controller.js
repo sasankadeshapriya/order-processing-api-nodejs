@@ -16,7 +16,7 @@ const invoiceSchema = {
     payment_option: { type: "enum", values: ['credit', 'cash', 'cheque', 'cash-half'] },
     products: { type: "array", items: { type: "object", props: {
         product_id: { type: "number" },
-        batch_id: { type: "number" },
+        batch_id: { type: "string" },
         quantity: { type: "number" },
         sum: { type: "number" }
     }}}
@@ -210,13 +210,13 @@ async function deleteInvoice(req, res) {
             return res.status(404).json({ message: "Invoice not found" });
         }
 
-        // Delete associated invoice details using reference_number
-        await models.InvoiceDetail.destroy({ where: { reference_number: invoice.reference_number } });
+        // Soft delete associated invoice details using reference_number
+        await models.InvoiceDetail.update({ deletedAt: new Date() }, { where: { reference_number: invoice.reference_number } });
 
-        // Delete associated payments using reference_number
-        await models.Payment.destroy({ where: { reference_number: invoice.reference_number } });
+        // Soft delete associated payments using reference_number
+        await models.Payment.update({ deletedAt: new Date() }, { where: { reference_number: invoice.reference_number } });
 
-        // Delete the invoice itself
+        // Soft delete the invoice itself
         await invoice.destroy();
 
         res.status(200).json({ message: "Invoice deleted successfully" });

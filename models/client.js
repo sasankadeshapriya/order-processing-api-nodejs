@@ -29,10 +29,12 @@ module.exports = (sequelize, DataTypes) => {
     credit_limit: DataTypes.DECIMAL(10, 2),
     credit_period: DataTypes.INTEGER,
     route_id: DataTypes.INTEGER,
-    added_by_employee_id: DataTypes.INTEGER
+    added_by_employee_id: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Client',
+    paranoid: true
   });
   return Client;
 };

@@ -26,11 +26,13 @@ module.exports = (sequelize, DataTypes) => {
     commission_rate: DataTypes.DECIMAL(10, 2),
     added_by_admin_id: DataTypes.INTEGER,
     current_location: DataTypes.STRING,
-    profile_picture: DataTypes.STRING
+    profile_picture: DataTypes.STRING,
+    deletedAt: DataTypes.DATE
   }, 
   {
     sequelize,
     modelName: 'Employee',
+    paranoid: true
   });
   return Employee;
 };

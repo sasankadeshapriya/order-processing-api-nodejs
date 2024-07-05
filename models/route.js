@@ -18,10 +18,12 @@ module.exports = (sequelize, DataTypes) => {
   Route.init({
     name: DataTypes.STRING,
     waypoints: DataTypes.TEXT,
-    added_by_admin_id: DataTypes.INTEGER
+    added_by_admin_id: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Route',
+    paranoid: true
   });
   return Route;
 };

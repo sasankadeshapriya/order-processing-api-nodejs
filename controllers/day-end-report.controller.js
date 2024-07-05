@@ -27,17 +27,17 @@ async function getDayEndReport(req, res) {
             raw: true
         });
 
-        const batchIds = invoiceDetails.map(detail => detail.batch_id);
+        const batchSkus = invoiceDetails.map(detail => detail.batch_id);
         const batches = await models.Batch.findAll({
-            where: { id: batchIds },
-            include: [models.Product],
+            where: { sku: batchSkus },
+            include: [{ model: models.Product, attributes: ['name', 'product_code'] }],
             raw: true,
             nest: true
         });
 
         // Map Batches to Products for easy access
         const batchMap = batches.reduce((acc, batch) => {
-            acc[batch.id] = { sku: batch.sku, productName: batch.Product.name, productCode: batch.Product.product_code };
+            acc[batch.sku] = { sku: batch.sku, productName: batch.Product.name, productCode: batch.Product.product_code };
             return acc;
         }, {});
 

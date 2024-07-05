@@ -24,6 +24,14 @@ module.exports = {
       added_by_admin_id: {
         type: Sequelize.INTEGER
       },
+      intialqty: {
+        type: Sequelize.DECIMAL(10,2)
+      },
+      looked: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: true
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
@@ -31,6 +39,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deletedAt: {
+        type: Sequelize.DATE,
+        allowNull: true
       }
     });
   },

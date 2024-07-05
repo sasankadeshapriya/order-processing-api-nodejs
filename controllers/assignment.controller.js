@@ -242,6 +242,8 @@ async function deleteAssignment(req,res){
                 message: "Assignment not found"
             });
         }
+
+        //softdelete
         await assignment.destroy();
         res.status(200).json({
             message:"Assignment deleted successfully"

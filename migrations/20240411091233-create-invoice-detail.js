@@ -16,7 +16,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       batch_id: {
-        type: Sequelize.INTEGER
+        type: Sequelize.STRING
       },
       quantity: {
         type: Sequelize.DECIMAL(10 , 2)
@@ -31,6 +31,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deletedAt: {
+        type: Sequelize.DATE,
+        allowNull: true
       }
     });
   },

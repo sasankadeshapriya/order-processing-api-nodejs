@@ -123,6 +123,11 @@ async function deleteProduct(req, res) {
                 message: "Product not found"
             });
         }
+
+        // Soft delete related batches and vehicle inventories
+        await models.Batch.update({ deletedAt: new Date() }, { where: { product_id: productId } });
+        await models.Vehicle_inventory.update({ deletedAt: new Date() }, { where: { product_id: productId } });
+
         await product.destroy();
         res.status(200).json({
             message: "Product deleted successfully"

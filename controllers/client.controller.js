@@ -111,6 +111,7 @@ async function deleteClient(req, res) {
             return res.status(404).json({ message: "Client not found" });
         }
 
+        //client softdelete
         await client.destroy();
         res.status(200).json({ message: "Client deleted successfully" });
     } catch (error) {
