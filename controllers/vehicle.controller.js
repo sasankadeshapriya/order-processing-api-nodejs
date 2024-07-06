@@ -30,16 +30,26 @@ async function createVehicle(req, res) {
 
     if (validationResponse !== true) {
         return res.status(400).json({
-            message: "Validation failed",
+            message: "Vehicle Number is not valid",
             error: validationResponse
         });
     }
     
     try {
         // Check if vehicle_no is unique
-        const existingVehicle = await models.Vehicle.findOne({ where: { vehicle_no: vehicleData.vehicle_no } });
-        if (existingVehicle) {
-            return res.status(409).json({ message: 'Vehicle number already exists' });
+        const existingVehicleNo = await models.Vehicle.findOne({ where: { vehicle_no: vehicleData.vehicle_no } });
+        if (existingVehicleNo) {
+            return res.status(409).json({ 
+                message: 'Vehicle number already exists' 
+            });
+        }
+
+        // Check if name is unique
+        const existingVehicleName = await models.Vehicle.findOne({ where: { name: vehicleData.name } });
+        if (existingVehicleName) {
+            return res.status(409).json({ 
+                message: 'Vehicle name already exists' 
+            });
         }
 
         // Create new vehicle
@@ -87,7 +97,7 @@ async function updateVehicle(req, res) {
     const validatorInstance = new validator();
     const validationResponse = validatorInstance.validate(updateVehicleData, schema);
 
-    if(validationResponse !== true){
+    if (validationResponse !== true) {
         return res.status(400).json({
             message: "Validation failed",
             error: validationResponse
@@ -109,14 +119,27 @@ async function updateVehicle(req, res) {
 
         // Check if the updated vehicle number is different and if it already exists
         if (updateVehicleData.vehicle_no !== vehicle.vehicle_no) {
-            const existingVehicle = await models.Vehicle.findOne({ 
+            const existingVehicleNo = await models.Vehicle.findOne({ 
                 where: { 
                     vehicle_no: updateVehicleData.vehicle_no,
                     id: { [models.Sequelize.Op.not]: vehicleId } // Exclude the current vehicle being updated
                 } 
             });
-            if (existingVehicle) {
+            if (existingVehicleNo) {
                 return res.status(409).json({ message: 'Vehicle number already exists' });
+            }
+        }
+
+        // Check if the updated name is different and if it already exists
+        if (updateVehicleData.name !== vehicle.name) {
+            const existingVehicleName = await models.Vehicle.findOne({ 
+                where: { 
+                    name: updateVehicleData.name,
+                    id: { [models.Sequelize.Op.not]: vehicleId } // Exclude the current vehicle being updated
+                } 
+            });
+            if (existingVehicleName) {
+                return res.status(409).json({ message: 'Vehicle name already exists' });
             }
         }
 
@@ -127,13 +150,14 @@ async function updateVehicle(req, res) {
             vehicle: vehicle
         });
 
-    } catch(error) {
+    } catch (error) {
         console.error(error);
         res.status(500).json({
             message: "Something went wrong!"
         });
     }
 }
+
 
 // Service function to update the assigned field of a vehicle
 async function updateVehicleAssigned(vehicleId, assigned) {

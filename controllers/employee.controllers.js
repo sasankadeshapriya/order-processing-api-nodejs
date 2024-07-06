@@ -332,7 +332,7 @@ async function getAllEmployees(req, res) {
     try {
         // Fetch all employees from the database, including their assigned status
         const employees = await models.Employee.findAll({
-            attributes: ['name','email','nic','phone_no','commission_rate','assigned','profile_picture'], // Include only necessary fields
+            attributes: ['id','name','email','nic','phone_no','commission_rate','assigned','profile_picture'], // Include only necessary fields
             raw: true // Get raw data instead of Sequelize instances
         });
 

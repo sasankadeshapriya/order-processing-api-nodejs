@@ -46,7 +46,7 @@ async function createAssignment(req, res) {
 
         if (dailyEmployeeAssignmentCheck) {
             return res.status(400).json({
-                message: `This employee is already assigned to a task on ${assignDate.toISOString().split('T')[0]}.`,
+                message: `Selected employee is already assigned on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -62,7 +62,7 @@ async function createAssignment(req, res) {
 
         if (existingAssignment) {
             return res.status(400).json({
-                message: `An assignment already exists for employee id: ${assignData.employee_id}, vehicle id:${assignData.vehicle_id}, route id: ${assignData.route_id}, and date ${assignData.assign_date}.`,
+                message: `An assignment already exists for selected employee, vehicle, and route on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -78,7 +78,7 @@ async function createAssignment(req, res) {
 
         if (conflictingAssignment) {
             return res.status(400).json({
-                message: `Another employee is already assigned to route id: ${assignData.route_id} and vehicle id: ${assignData.vehicle_id} on ${assignData.assign_date}.`,
+                message: `Another employee is already assigned to the selected road and vehicle on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -93,7 +93,7 @@ async function createAssignment(req, res) {
 
         if (conflictingVehicleAssignment) {
             return res.status(400).json({
-                message: `Another vehicle is already assigned to route ${assignData.route_id} on ${assignData.assign_date}.`,
+                message: `Another vehicle is already assigned to the selected road on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -107,7 +107,7 @@ async function createAssignment(req, res) {
 
         if (conflictingSameVehicleAssignment && conflictingSameVehicleAssignment.route_id !== assignData.route_id) {
             return res.status(400).json({
-                message: `The vehicle is already assigned to a different route on ${assignData.assign_date}.`,
+                message: `Selected vehicle is already assigned to a different route on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -126,6 +126,7 @@ async function createAssignment(req, res) {
         });
     }
 }
+
 
 // Controller function to update an assignment
 async function updateAssignment(req, res) {
@@ -182,7 +183,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingEmployeeAssignment) {
             return res.status(400).json({
-                message: `Employee id: ${updatedAssignData.employee_id} is already assigned on ${updatedAssignData.assign_date}`,
+                message: `Selected employee is already assigned on ${updatedAssignData.assign_date.toISOString().split('T')[0]}`,
             });
         }
 
@@ -197,7 +198,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingVehicleAssignment) {
             return res.status(400).json({
-                message: `Vehicle id: ${updatedAssignData.vehicle_id} is already assigned on ${updatedAssignData.assign_date}`,
+                message: `Selected vehicle is already assigned on ${updatedAssignData.assign_date.toISOString().split('T')[0]}`,
             });
         }
 
@@ -212,7 +213,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingRouteAssignment) {
             return res.status(400).json({
-                message: `Route id:${updatedAssignData.route_id} is already assigned on ${updatedAssignData.assign_date}`,
+                message: `Selected route is already assigned on ${updatedAssignData.assign_date.toISOString().split('T')[0]}`,
             });
         }
 
