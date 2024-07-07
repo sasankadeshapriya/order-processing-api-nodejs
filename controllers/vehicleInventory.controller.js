@@ -269,7 +269,7 @@ function deleteVehicleInventory(req, res) {
                             message: 'Batch not found for the specified product and SKU'
                         });
                     }
-
+                    
                     // Update batch quantity by adding the quantity of the vehicle inventory to be deleted
                     const updatedBatchQuantity = parseFloat(batch.quantity) + quantityToDelete;
                     batch.update({ quantity: updatedBatchQuantity })
@@ -563,11 +563,43 @@ function updateVehicleInventoryAdmin(req, res) {
         });
 }
 
+
+// Toggle the 'looked' field of a vehicle inventory record
+async function toggleLookedField(req, res) {
+    const vehicleInventoryId = req.params.vehicleInventoryId;
+
+    try {
+        const inventory = await models.Vehicle_inventory.findByPk(vehicleInventoryId);
+        if (!inventory) {
+            return res.status(404).json({
+                message: "Vehicle inventory not found"
+            });
+        }
+
+        // Toggle the 'looked' field
+        inventory.looked = !inventory.looked;
+        await inventory.save();
+
+        return res.status(200).json({
+            message: "Vehicle inventory 'looked' status toggled successfully",
+            vehicleInventory: inventory
+        });
+    } catch (error) {
+        console.error("Error toggling 'looked' status:", error);
+        return res.status(500).json({
+            message: "Failed to toggle 'looked' status",
+            error: error.message
+        });
+    }
+}
+
+
 module.exports = {
     insertVehicleInventory:insertVehicleInventory,
     updateVehicleInventory:updateVehicleInventory,
     deleteVehicleInventory:deleteVehicleInventory,
     getAllVehicleInventories: getAllVehicleInventories,
     getVehicleInventoryById: getVehicleInventoryById,
-    updateVehicleInventoryAdmin:updateVehicleInventoryAdmin
+    updateVehicleInventoryAdmin:updateVehicleInventoryAdmin,
+    toggleLookedField:toggleLookedField
 }

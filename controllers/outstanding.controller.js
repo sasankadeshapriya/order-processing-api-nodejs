@@ -85,7 +85,8 @@ async function getClientsWithOutstandingBalances(req, res) {
             ],
             include: [{
                 model: Client,
-                attributes: ['name', 'phone_no']
+                attributes: ['name', 'phone_no'],
+                paranoid: false
             }],
             order: [['credit_period_end_date', 'ASC']]
         });

@@ -124,6 +124,20 @@ async function deleteProduct(req, res) {
             });
         }
 
+        // Check if there are any looked vehicle inventories related to this product
+        const lockedInventories = await models.Vehicle_inventory.findOne({
+            where: {
+                product_id: productId,
+                looked: true  // Check for locked inventories
+            }
+        });
+
+        if (lockedInventories) {
+            return res.status(400).json({
+                message: "Cannot delete product because it has locked inventories."
+            });
+        }
+                
         // Soft delete related batches and vehicle inventories
         await models.Batch.update({ deletedAt: new Date() }, { where: { product_id: productId } });
         await models.Vehicle_inventory.update({ deletedAt: new Date() }, { where: { product_id: productId } });

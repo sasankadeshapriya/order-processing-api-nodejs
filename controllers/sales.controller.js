@@ -42,7 +42,8 @@ async function getSalesReport(req, res) {
             include: [
                 {
                     model: models.Client,
-                    attributes: ['name','id']
+                    attributes: ['name','id'],
+                    paranoid: false
                 }
             ],
             where: filterOptions,
@@ -168,7 +169,8 @@ async function getMostSoldProducts(filterOptions) {
                 [Op.in]: productIds
             }
         },
-        attributes: ['id', 'name']
+        attributes: ['id', 'name'],
+        paranoid: false
     });
 
     const productMap = products.reduce((acc, product) => {
