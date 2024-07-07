@@ -41,6 +41,10 @@ app.use("/sales", salesRoute);
 app.use("/outstanding", outstandingRoute);
 app.use("/day-report", dayEndRoute);
 
+app.get('/time', (req, res) => {
+    res.send(new Date().toString());
+});
+
 app.get('/', (req, res) => {
     res.send('Server is working');
 });
