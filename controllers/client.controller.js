@@ -7,8 +7,8 @@ const v = new validator();
 const clientSchema = {
     name: { type: "string", min: 2, max: 50 },
     organization_name: { type: "string", optional: false },
-    latitude: { type: "number", optional: false },
-    longitude: { type: "number", optional: false },
+    latitude: { type: "number", optional: true },
+    longitude: { type: "number", optional: true },
     phone_no: { type: "string", optional: false, pattern: /^\+?\d{9,13}$/},
     status: { type: "enum", values: ['verified', 'not verified'], optional: true },
     discount: { type: "number", optional: false },
