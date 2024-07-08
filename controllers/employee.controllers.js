@@ -439,6 +439,43 @@ async function getEmployeeLocation(req, res) {
     }
 }
 
+// Soft delete an employee by ID
+async function deleteEmployee(req, res) {
+    const employeeId = req.params.employeeId;
+    try {
+        const employee = await models.Employee.findByPk(employeeId);
+        if (!employee) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        // Check if the employee is currently assigned to any assignment
+        const activeAssignment = await models.Assignment.findOne({
+            where: {
+                employee_id: employeeId,
+                deletedAt: null  // Ensure the assignment isn't already deleted
+            }
+        });
+
+        if (activeAssignment) {
+            return res.status(400).json({
+                message: "Cannot delete employee because they are currently assigned to an assignment."
+            });
+        }
+
+        // Soft delete the employee
+        await employee.destroy();
+        res.status(200).json({
+            message: "Employee deleted successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
 
 module.exports = {
     signUp: signUp,
@@ -450,5 +487,6 @@ module.exports = {
     getAllEmployees: getAllEmployees,
     getEmployeeDetails: getEmployeeDetails,
     updateEmployeeLocation: updateEmployeeLocation,
-    getEmployeeLocation: getEmployeeLocation
+    getEmployeeLocation: getEmployeeLocation,
+    deleteEmployee:deleteEmployee
 }

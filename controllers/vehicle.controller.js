@@ -178,27 +178,41 @@ async function updateVehicleAssigned(vehicleId, assigned) {
 }
 
 
-//Controller for deleting a vehicle
-async function deleteVehicle(req,res){
+// Controller for deleting a vehicle
+async function deleteVehicle(req, res) {
     const vehicleId = req.params.vehicleId;
 
-    try{
+    try {
         const vehicle = await models.Vehicle.findByPk(vehicleId);
-        if(!vehicle){
+        if (!vehicle) {
             return res.status(404).json({
-                message:"Vehicle not found"
+                message: "Vehicle not found"
             });
         }
 
-        //softdelete --> vehicle
+        // Check if the vehicle is currently assigned
+        const activeAssignment = await models.Assignment.findOne({
+            where: {
+                vehicle_id: vehicleId,
+                deletedAt: null  // Ensure the assignment isn't already deleted
+            }
+        });
+
+        if (activeAssignment) {
+            return res.status(400).json({
+                message: "Cannot delete vehicle because it is currently assigned."
+            });
+        }
+
+        // Soft delete the vehicle
         await vehicle.destroy();
         res.status(200).json({
-            message: "Product deleted successfully"
+            message: "Vehicle deleted successfully"
         });
-    }catch(error){
+    } catch (error) {
         console.log(error);
         res.status(500).json({
-            message:"Something went wrong!"
+            message: "Something went wrong!"
         });
     }
 }

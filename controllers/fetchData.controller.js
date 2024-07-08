@@ -62,4 +62,6 @@ async function fetchData(req, res) {
     }
 }
 
-module.exports = { fetchData };
+module.exports = { 
+    fetchData:fetchData
+};

@@ -126,31 +126,47 @@ async function updateRouteAssigned(routeId, assigned) {
     }
   }
   
+// Controller for deleting a route
+async function deleteRoute(req, res) {
+  const routeId = req.params.routeId;
 
-//Controller for deleting a vehicle
-async function deleteRoute(req,res){
-    const routeId = req.params.routeId;
+  try {
+      const route = await models.Route.findByPk(routeId);
+      if (!route) {
+          return res.status(404).json({
+              message: "Route not found"
+          });
+      }
 
-    try{
-        const route = await models.Route.findByPk(routeId);
-        if(!route){
-            return res.status(404).json({
-                message: "Route not found"
-            });
-        }
+      // Check if the route is currently assigned to any assignment
+      const activeAssignment = await models.Assignment.findOne({
+          where: {
+              route_id: routeId,
+              deletedAt: null  // Ensure the assignment isn't already deleted
+          }
+      });
 
-        //softdelete 
-        await route.destroy();
-        res.status(200).json({
-            message:"Route deleted successfully"
-        });
-    }catch(error){
-        console.log(error);
-        res.status(500).json({
-            message:"Something went wrong!"
-        });
-    }
+      if (activeAssignment) {
+          return res.status(400).json({
+              message: "Cannot delete route because it is currently assigned."
+          });
+      }
+
+      // Soft delete the route
+      await route.destroy();
+      res.status(200).json({
+          message: "Route deleted successfully"
+      });
+  } catch (error) {
+      console.log(error);
+      res.status(500).json({
+          message: "Something went wrong!"
+      });
+  }
 }
+
+
+
 // Controller for getting all the routes
 async function getAllRoutes(req, res) {
     try {
