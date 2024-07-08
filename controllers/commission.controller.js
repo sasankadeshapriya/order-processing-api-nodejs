@@ -205,7 +205,8 @@ async function getCommissionsByEmpId(req, res) {
             },
             include: [{
                 model: Employee,
-                attributes: ['name', 'email']
+                attributes: ['name', 'email'],
+                paranoid: false
             }]
         });
 

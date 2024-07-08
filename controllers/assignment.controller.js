@@ -233,26 +233,41 @@ async function updateAssignment(req, res) {
     }
 }
 
-//Controller for deleting a assignment
-async function deleteAssignment(req,res){
+// Controller for deleting an assignment
+async function deleteAssignment(req, res) {
     const assignmentId = req.params.assignmentId;
-    try{
+
+    try {
         const assignment = await models.Assignment.findByPk(assignmentId);
-        if(!assignment){
+        if (!assignment) {
             return res.status(404).json({
                 message: "Assignment not found"
             });
         }
 
-        //softdelete
+        // Check if there are active vehicle inventories assigned to this assignment
+        const activeVehicleInventory = await models.Vehicle_inventory.findOne({
+            where: {
+                assignment_id: assignmentId,
+                deletedAt: null  // Ensure the inventory isn't already deleted
+            }
+        });
+
+        if (activeVehicleInventory) {
+            return res.status(400).json({
+                message: "Cannot delete assignment because it has active vehicle inventories assigned to it."
+            });
+        }
+
+        // Soft delete the assignment
         await assignment.destroy();
         res.status(200).json({
-            message:"Assignment deleted successfully"
+            message: "Assignment deleted successfully"
         });
-    }catch(error){
+    } catch (error) {
         console.log(error);
         res.status(500).json({
-            message:"Something went wrong!"
+            message: "Something went wrong!"
         });
     }
 }

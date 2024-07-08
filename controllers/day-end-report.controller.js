@@ -30,9 +30,10 @@ async function getDayEndReport(req, res) {
         const batchSkus = invoiceDetails.map(detail => detail.batch_id);
         const batches = await models.Batch.findAll({
             where: { sku: batchSkus },
-            include: [{ model: models.Product, attributes: ['name', 'product_code'] }],
+            include: [{ model: models.Product, attributes: ['name', 'product_code'], paranoid: false }],
             raw: true,
-            nest: true
+            nest: true,
+            paranoid: false
         });
 
         // Map Batches to Products for easy access

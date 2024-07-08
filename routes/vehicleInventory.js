@@ -9,6 +9,7 @@ router.delete('/:vehicleInventoryId', vehicleInventoryController.deleteVehicleIn
 router.get('/:vehicleInventoryId', vehicleInventoryController.getVehicleInventoryById);
 router.get('/', vehicleInventoryController.getAllVehicleInventories);
 router.put('/admin/:vehicleInventoryId', vehicleInventoryController.updateVehicleInventoryAdmin);
+router.put('/toggle-looked/:vehicleInventoryId', vehicleInventoryController.toggleLookedField);
 
 // /vehicle-inventory?in_stock=true --> to get above qty 0
 

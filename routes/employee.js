@@ -16,6 +16,7 @@ router.put('/:employeeId/update/location', employeeController.updateEmployeeLoca
 router.get('/:employeeId/location', employeeController.getEmployeeLocation);
 router.post('/add', employeeController.addEmployee); //admin only
 router.put('/:id', employeeController.updateEmployee); //admin only
+router.delete('/:employeeId', employeeController.deleteEmployee);
 
 //test
 const testController = require('../controllers/test.controller');
