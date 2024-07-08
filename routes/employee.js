@@ -14,6 +14,8 @@ router.get('/all', employeeController.getAllEmployees);
 router.get('/:employeeId/details', employeeController.getEmployeeDetails);
 router.put('/:employeeId/update/location', employeeController.updateEmployeeLocation);
 router.get('/:employeeId/location', employeeController.getEmployeeLocation);
+router.post('/add', employeeController.addEmployee); //admin only
+router.put('/:id', employeeController.updateEmployee); //admin only
 
 //test
 const testController = require('../controllers/test.controller');

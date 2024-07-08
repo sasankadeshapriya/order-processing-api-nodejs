@@ -10,5 +10,6 @@ router.delete('/:clientId', clientController.deleteClient);
 router.get('/', clientController.getAllClients);
 router.get('/:clientId', clientController.getClientById);
 router.get('/route/:routeId/locations', clientController.getClientsByRouteId);
+router.post('/verify/:clientId', clientController.updateClientStatus);
 
 module.exports = router;

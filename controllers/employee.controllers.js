@@ -14,7 +14,7 @@ function signUp(req, res){
             });
         }else{
             const user = {
-                name: req.body.name,
+                name: req.body.name, 
                 email:req.body.email,
                 password: req.body.password,
                 nic: req.body.nic,
@@ -439,6 +439,139 @@ async function getEmployeeLocation(req, res) {
     }
 }
 
+// add employee
+function addEmployee(req, res) {
+    models.Employee.findOne({ where: { email: req.body.email } }).then(result => {
+        if (result) {
+            res.status(409).json({
+                message: "Email already exists!",
+            });
+        } else {
+            const user = {
+                name: req.body.name || null,
+                email: req.body.email,
+                password: req.body.password,
+                nic: req.body.nic || null,
+                phone_no: req.body.phone_no || null,
+                commission_rate: req.body.commission_rate || null,
+                added_by_admin_id: req.body.added_by_admin_id,
+                current_location: req.body.current_location || null,
+                assigned: req.body.assigned || false,
+                profile_picture: req.body.profile_picture || null
+            };
+            
+            const schema = {
+                name: { type: "string", optional: true, max: 50, pattern: /^[a-zA-Z\s]+$/ },
+                email: { type: "email", optional: false, max: 35 },
+                password: { type: "string", optional: false, min: 8 },
+                nic: { type: "string", optional: true }, 
+                phone_no: { type: "string", optional: true },
+                commission_rate: { type: "number", optional: true }, 
+                added_by_admin_id: { type: "number", optional: false }, 
+                current_location: { type: "string", optional: true }, 
+                assigned: { type: "boolean", optional: true },
+                profile_picture: { type: "string", optional: true }
+            };
+            
+            const vldator = new validator();
+            const validationResponse = vldator.validate(user, schema);
+            
+            if (validationResponse !== true) {
+                return res.status(400).json({
+                    message: "Validation failed",
+                    error: validationResponse
+                });
+            }
+            
+            bcryptjs.genSalt(10, function (err, salt) {
+                bcryptjs.hash(user.password, salt, function (err, hash) {
+                    user.password = hash;
+
+                    models.Employee.create(user).then(result => {
+                        res.status(201).json({
+                            message: "User created successfully",
+                        });
+                    }).catch(error => {
+                        console.log(error);
+                        res.status(500).json({
+                            message: "Something went wrong!",
+                        });
+                    });
+                });
+            });
+        }
+    }).catch(error => {
+        console.log(error);
+        res.status(500).json({
+            message: "Something went wrong!",
+        });
+    });
+}
+
+async function updateEmployee(req, res) {
+    const employeeId = req.params.id;
+
+    const schema = {
+        email: { type: "email", optional: false, max: 35 },
+        password: { type: "string", optional: true, min: 8 },
+        commission_rate: { type: "number", optional: true }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(req.body, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    try {
+        const existingEmployee = await models.Employee.findOne({
+            where: {
+                email: req.body.email,
+                id: { [models.Sequelize.Op.ne]: employeeId }
+            }
+        });
+
+        if (existingEmployee) {
+            return res.status(409).json({
+                message: "Email already exists!"
+            });
+        }
+
+        let updatedData = {
+            email: req.body.email,
+            commission_rate: req.body.commission_rate
+        };
+
+        if (req.body.password) {
+            const salt = await bcryptjs.genSalt(10);
+            const hash = await bcryptjs.hash(req.body.password, salt);
+            updatedData.password = hash;
+        }
+
+        const [updated] = await models.Employee.update(updatedData, {
+            where: { id: employeeId }
+        });
+
+        if (updated === 0) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Employee updated successfully"
+        });
+    } catch (error) {
+        console.error("Error updating employee:", error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
 
 module.exports = {
     signUp: signUp,
@@ -450,5 +583,7 @@ module.exports = {
     getAllEmployees: getAllEmployees,
     getEmployeeDetails: getEmployeeDetails,
     updateEmployeeLocation: updateEmployeeLocation,
-    getEmployeeLocation: getEmployeeLocation
+    getEmployeeLocation: getEmployeeLocation,
+    addEmployee: addEmployee,
+    updateEmployee: updateEmployee
 }

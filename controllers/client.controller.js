@@ -97,7 +97,7 @@ async function updateClient(req, res) {
         res.status(200).json({ message: "Client updated successfully", client });
     } catch (error) {
         console.error("Error updating client:", error);
-        res.status(500).json({ message: "Failed to update client" });
+        res.status(500).json({ message: "Failed to update client", error: error.message });
     }
 }
 
@@ -169,6 +169,31 @@ async function getClientsByRouteId(req, res) {
     }
 }
 
+// Update client status
+async function updateClientStatus(req, res) {
+    try {
+        const clientId = req.params.clientId;
+        const { status } = req.body;
+
+        // Validate status
+        if (!['verified', 'not verified'].includes(status)) {
+            return res.status(400).json({ message: "Invalid status value" });
+        }
+
+        const client = await models.Client.findByPk(clientId);
+        if (!client) {
+            return res.status(404).json({ message: "Client not found" });
+        }
+
+        client.status = status;
+        await client.save();
+
+        res.status(200).json({ message: "Client status updated successfully", client });
+    } catch (error) {
+        console.error("Error updating client status:", error);
+        res.status(500).json({ message: "Failed to update client status" });
+    }
+}
 
 module.exports = {
     createClient:createClient,
@@ -176,5 +201,6 @@ module.exports = {
     deleteClient:deleteClient,
     getAllClients:getAllClients,
     getClientById:getClientById,
-    getClientsByRouteId:getClientsByRouteId
+    getClientsByRouteId:getClientsByRouteId,
+    updateClientStatus:updateClientStatus
 }
