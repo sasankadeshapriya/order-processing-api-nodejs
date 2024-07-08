@@ -20,6 +20,7 @@ const salesRoute = require('./routes/sales');
 const outstandingRoute = require('./routes/outstanding');
 const dayEndRoute = require('./routes/day-end-report');
 const trashRoute = require('./routes/trash');
+const dashRoute = require('./routes/dashboard');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
@@ -42,6 +43,7 @@ app.use("/sales", salesRoute);
 app.use("/outstanding", outstandingRoute);
 app.use("/day-report", dayEndRoute);
 app.use("/trash", trashRoute);
+app.use("/dashboard", dashRoute);
 
 app.get('/time', (req, res) => {
     res.send(new Date().toString());
