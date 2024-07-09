@@ -60,7 +60,8 @@ async function getSummaryData(req, res) {
             return {
                 product_id: item.product_id,
                 product_name: product ? product.name : 'NA',
-                total_quantity: item.total_quantity
+                total_quantity: item.total_quantity,
+                product_code: product.product_code
             };
         }));
 
