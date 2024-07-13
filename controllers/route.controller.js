@@ -131,41 +131,53 @@ async function deleteRoute(req, res) {
   const routeId = req.params.routeId;
 
   try {
-      const route = await models.Route.findByPk(routeId);
-      if (!route) {
-          return res.status(404).json({
-              message: "Route not found"
-          });
-      }
-
-      // Check if the route is currently assigned to any assignment
-      const activeAssignment = await models.Assignment.findOne({
-          where: {
-              route_id: routeId,
-              deletedAt: null  // Ensure the assignment isn't already deleted
-          }
+    const route = await models.Route.findByPk(routeId);
+    if (!route) {
+      return res.status(404).json({
+        message: "Route not found"
       });
+    }
 
-      if (activeAssignment) {
-          return res.status(400).json({
-              message: "Cannot delete route because it is currently assigned."
-          });
+    // Check if the route is currently assigned to any assignment
+    const activeAssignment = await models.Assignment.findOne({
+      where: {
+        route_id: routeId,
+        deletedAt: null  // Ensure the assignment isn't already deleted
       }
+    });
 
-      // Soft delete the route
-      await route.destroy();
-      res.status(200).json({
-          message: "Route deleted successfully"
+    if (activeAssignment) {
+      return res.status(400).json({
+        message: "Cannot delete route because it is currently assigned to an assignment."
       });
+    }
+
+    // Check if there are any active clients assigned to the route
+    const activeClient = await models.Client.findOne({
+      where: {
+        route_id: routeId,
+        deletedAt: null  // Ensure the client isn't already deleted
+      }
+    });
+
+    if (activeClient) {
+      return res.status(400).json({
+        message: "Cannot delete route because it is currently assigned to a client."
+      });
+    }
+
+    // Soft delete the route
+    await route.destroy();
+    res.status(200).json({
+      message: "Route deleted successfully"
+    });
   } catch (error) {
-      console.log(error);
-      res.status(500).json({
-          message: "Something went wrong!"
-      });
+    console.log(error);
+    res.status(500).json({
+      message: "Something went wrong!"
+    });
   }
 }
-
-
 
 // Controller for getting all the routes
 async function getAllRoutes(req, res) {
