@@ -12,7 +12,7 @@ async function fetchData(req, res) {
             },
             include: [{
                 model: Vehicle_inventory,
-                attributes: ['id', 'assignment_id', 'product_id', 'sku', 'quantity'],  // Specify only needed attributes
+                attributes: ['id', 'assignment_id', 'product_id', 'sku', 'quantity','intialqty'],  // Specify only needed attributes
                 include: [{
                     model: Product,
                     attributes: ['id', 'name', 'product_code', 'measurement_unit', 'description', 'product_image'],

@@ -14,6 +14,125 @@ const schema = {
 const v = new validator();
 
 
+// function insertVehicleInventory(req, res) {
+//     const data = {
+//         quantity: req.body.quantity,
+//         sku: req.body.sku,
+//         product_id: req.body.product_id,
+//         added_by_admin_id: req.body.added_by_admin_id,
+//         assignment_id: req.body.assignment_id,
+//         intialqty: req.body.quantity
+//     };
+
+//     // Validate data
+//     const validationResponse = v.validate(data, schema);
+//     if (validationResponse !== true) {
+//         return res.status(400).json({
+//             success: false,
+//             message: 'Validation error',
+//             errors: validationResponse
+//         });
+//     }
+
+//     // Find batch with matching SKU and product ID
+//     models.Batch.findOne({ where: { sku: data.sku, product_id: data.product_id } })
+//         .then(batch => {
+//             if (!batch) {
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: 'Batch not found for the specified product and SKU'
+//                 });
+//             }
+
+//             // Check if batch has sufficient quantity
+//             if (parseFloat(batch.quantity) < parseFloat(data.quantity)) {
+//                 return res.status(400).json({
+//                     success: false,
+//                     message: 'Insufficient quantity in batch'
+//                 });
+//             }
+
+//             // Find existing vehicle inventory with the same SKU and product ID
+//             models.Vehicle_inventory.findOne({ where: { assignment_id:data.assignment_id, sku: data.sku, product_id: data.product_id } })
+//                 .then(vehicleInventory => {
+//                     if (vehicleInventory) {
+//                         // If record already exists, update its quantity
+//                         const updatedQuantity = parseFloat(vehicleInventory.quantity) + parseFloat(data.quantity);
+//                         vehicleInventory.update({ quantity: updatedQuantity, intialqty: updatedQuantity })
+//                             .then(updatedVehicleInventory => {
+//                                 // Update batch quantity
+//                                 const updatedBatchQuantity = parseFloat(batch.quantity) - parseFloat(data.quantity);
+//                                 batch.update({ quantity: updatedBatchQuantity })
+//                                     .then(() => {
+//                                         res.status(200).json({
+//                                             success: true,
+//                                             message: 'Vehicle inventory quantity updated successfully',
+//                                             vehicleInventory: updatedVehicleInventory
+//                                         });
+//                                     })
+//                                     .catch(error => {
+//                                         console.log(error);
+//                                         res.status(500).json({
+//                                             success: false,
+//                                             message: 'Failed to update batch quantity'
+//                                         });
+//                                     });
+//                             })
+//                             .catch(error => {
+//                                 console.log(error);
+//                                 res.status(500).json({
+//                                     success: false,
+//                                     message: 'Failed to update vehicle inventory quantity'
+//                                 });
+//                             });
+//                     } else {
+//                         // If record doesn't exist, create a new one
+//                         models.Vehicle_inventory.create(data)
+//                             .then(newVehicleInventory => {
+//                                 // Update batch quantity
+//                                 const updatedBatchQuantity = parseFloat(batch.quantity) - parseFloat(data.quantity);
+//                                 batch.update({ quantity: updatedBatchQuantity })
+//                                     .then(() => {
+//                                         res.status(200).json({
+//                                             success: true,
+//                                             message: 'Vehicle inventory added successfully',
+//                                             vehicleInventory: newVehicleInventory
+//                                         });
+//                                     })
+//                                     .catch(error => {
+//                                         console.log(error);
+//                                         res.status(500).json({
+//                                             success: false,
+//                                             message: 'Failed to update batch quantity'
+//                                         });
+//                                     });
+//                             })
+//                             .catch(error => {
+//                                 console.log(error);
+//                                 res.status(500).json({
+//                                     success: false,
+//                                     message: 'Failed to create vehicle inventory'
+//                                 });
+//                             });
+//                     }
+//                 })
+//                 .catch(error => {
+//                     console.log(error);
+//                     res.status(500).json({
+//                         success: false,
+//                         message: 'Failed to find existing vehicle inventory'
+//                     });
+//                 });
+//         })
+//         .catch(error => {
+//             console.log(error);
+//             res.status(500).json({
+//                 success: false,
+//                 message: 'Something went wrong while fetching batch data'
+//             });
+//         });
+// }
+
 function insertVehicleInventory(req, res) {
     const data = {
         quantity: req.body.quantity,
@@ -34,93 +153,111 @@ function insertVehicleInventory(req, res) {
         });
     }
 
-    // Find batch with matching SKU and product ID
-    models.Batch.findOne({ where: { sku: data.sku, product_id: data.product_id } })
-        .then(batch => {
-            if (!batch) {
+    // Check if the assignment_id exists in the Assignment model
+    models.Assignment.findByPk(data.assignment_id)
+        .then(assignment => {
+            if (!assignment) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Batch not found for the specified product and SKU'
+                    message: 'Assignment not found'
                 });
             }
 
-            // Check if batch has sufficient quantity
-            if (parseFloat(batch.quantity) < parseFloat(data.quantity)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Insufficient quantity in batch'
-                });
-            }
-
-            // Find existing vehicle inventory with the same SKU and product ID
-            models.Vehicle_inventory.findOne({ where: { assignment_id:data.assignment_id, sku: data.sku, product_id: data.product_id } })
-                .then(vehicleInventory => {
-                    if (vehicleInventory) {
-                        // If record already exists, update its quantity
-                        const updatedQuantity = parseFloat(vehicleInventory.quantity) + parseFloat(data.quantity);
-                        vehicleInventory.update({ quantity: updatedQuantity, intialqty: updatedQuantity })
-                            .then(updatedVehicleInventory => {
-                                // Update batch quantity
-                                const updatedBatchQuantity = parseFloat(batch.quantity) - parseFloat(data.quantity);
-                                batch.update({ quantity: updatedBatchQuantity })
-                                    .then(() => {
-                                        res.status(200).json({
-                                            success: true,
-                                            message: 'Vehicle inventory quantity updated successfully',
-                                            vehicleInventory: updatedVehicleInventory
-                                        });
-                                    })
-                                    .catch(error => {
-                                        console.log(error);
-                                        res.status(500).json({
-                                            success: false,
-                                            message: 'Failed to update batch quantity'
-                                        });
-                                    });
-                            })
-                            .catch(error => {
-                                console.log(error);
-                                res.status(500).json({
-                                    success: false,
-                                    message: 'Failed to update vehicle inventory quantity'
-                                });
-                            });
-                    } else {
-                        // If record doesn't exist, create a new one
-                        models.Vehicle_inventory.create(data)
-                            .then(newVehicleInventory => {
-                                // Update batch quantity
-                                const updatedBatchQuantity = parseFloat(batch.quantity) - parseFloat(data.quantity);
-                                batch.update({ quantity: updatedBatchQuantity })
-                                    .then(() => {
-                                        res.status(200).json({
-                                            success: true,
-                                            message: 'Vehicle inventory added successfully',
-                                            vehicleInventory: newVehicleInventory
-                                        });
-                                    })
-                                    .catch(error => {
-                                        console.log(error);
-                                        res.status(500).json({
-                                            success: false,
-                                            message: 'Failed to update batch quantity'
-                                        });
-                                    });
-                            })
-                            .catch(error => {
-                                console.log(error);
-                                res.status(500).json({
-                                    success: false,
-                                    message: 'Failed to create vehicle inventory'
-                                });
-                            });
+            // Find batch with matching SKU and product ID
+            models.Batch.findOne({ where: { sku: data.sku, product_id: data.product_id } })
+                .then(batch => {
+                    if (!batch) {
+                        return res.status(404).json({
+                            success: false,
+                            message: 'Batch not found for the specified product and SKU'
+                        });
                     }
+
+                    // Check if batch has sufficient quantity
+                    if (parseFloat(batch.quantity) < parseFloat(data.quantity)) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Insufficient quantity in batch'
+                        });
+                    }
+
+                    // Find existing vehicle inventory with the same SKU and product ID
+                    models.Vehicle_inventory.findOne({ where: { assignment_id: data.assignment_id, sku: data.sku, product_id: data.product_id } })
+                        .then(vehicleInventory => {
+                            if (vehicleInventory) {
+                                // If record already exists, update its quantity
+                                const updatedQuantity = parseFloat(vehicleInventory.quantity) + parseFloat(data.quantity);
+                                vehicleInventory.update({ quantity: updatedQuantity, intialqty: updatedQuantity })
+                                    .then(updatedVehicleInventory => {
+                                        // Update batch quantity
+                                        const updatedBatchQuantity = parseFloat(batch.quantity) - parseFloat(data.quantity);
+                                        batch.update({ quantity: updatedBatchQuantity })
+                                            .then(() => {
+                                                res.status(200).json({
+                                                    success: true,
+                                                    message: 'Vehicle inventory quantity updated successfully',
+                                                    vehicleInventory: updatedVehicleInventory
+                                                });
+                                            })
+                                            .catch(error => {
+                                                console.log(error);
+                                                res.status(500).json({
+                                                    success: false,
+                                                    message: 'Failed to update batch quantity'
+                                                });
+                                            });
+                                    })
+                                    .catch(error => {
+                                        console.log(error);
+                                        res.status(500).json({
+                                            success: false,
+                                            message: 'Failed to update vehicle inventory quantity'
+                                        });
+                                    });
+                            } else {
+                                // If record doesn't exist, create a new one
+                                models.Vehicle_inventory.create(data)
+                                    .then(newVehicleInventory => {
+                                        // Update batch quantity
+                                        const updatedBatchQuantity = parseFloat(batch.quantity) - parseFloat(data.quantity);
+                                        batch.update({ quantity: updatedBatchQuantity })
+                                            .then(() => {
+                                                res.status(200).json({
+                                                    success: true,
+                                                    message: 'Vehicle inventory added successfully',
+                                                    vehicleInventory: newVehicleInventory
+                                                });
+                                            })
+                                            .catch(error => {
+                                                console.log(error);
+                                                res.status(500).json({
+                                                    success: false,
+                                                    message: 'Failed to update batch quantity'
+                                                });
+                                            });
+                                    })
+                                    .catch(error => {
+                                        console.log(error);
+                                        res.status(500).json({
+                                            success: false,
+                                            message: 'Failed to create vehicle inventory'
+                                        });
+                                    });
+                            }
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            res.status(500).json({
+                                success: false,
+                                message: 'Failed to find existing vehicle inventory'
+                            });
+                        });
                 })
                 .catch(error => {
                     console.log(error);
                     res.status(500).json({
                         success: false,
-                        message: 'Failed to find existing vehicle inventory'
+                        message: 'Something went wrong while fetching batch data'
                     });
                 });
         })
@@ -128,10 +265,11 @@ function insertVehicleInventory(req, res) {
             console.log(error);
             res.status(500).json({
                 success: false,
-                message: 'Something went wrong while fetching batch data'
+                message: 'Failed to verify assignment ID'
             });
         });
 }
+
 
 // update inventory by id
 function updateVehicleInventory(req, res) {
