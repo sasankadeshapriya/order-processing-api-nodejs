@@ -203,6 +203,33 @@ async function getPaymentById(req, res) {
     }
 }
 
+async function updatePaymentState(req, res) {
+    try {
+        const paymentId = req.params.paymentId;
+        const { state } = req.body;
+
+        // Check if the state is valid
+        if (!['verified', 'not-verified'].includes(state)) {
+            return res.status(400).json({ message: "Invalid state" });
+        }
+
+        // Find the payment to update
+        const payment = await models.Payment.findByPk(paymentId);
+        if (!payment) {
+            return res.status(404).json({ message: "Payment not found" });
+        }
+
+        // Update the payment state
+        await payment.update({ state });
+
+        res.status(200).json({ message: "Payment state updated successfully", payment });
+    } catch (error) {
+        console.error("Error updating payment state:", error);
+        res.status(500).json({ message: "Failed to update payment state", error: error.message });
+    }
+}
+
+
 
 
 module.exports = {
@@ -210,5 +237,6 @@ module.exports = {
     updatePayment:updatePayment,
     deletePayment:deletePayment,
     getAllPayments:getAllPayments,
-    getPaymentById: getPaymentById
+    getPaymentById: getPaymentById,
+    updatePaymentState: updatePaymentState
 }

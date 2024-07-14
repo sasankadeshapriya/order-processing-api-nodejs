@@ -16,6 +16,7 @@ router.put('/:employeeId/update/location', employeeController.updateEmployeeLoca
 router.get('/:employeeId/location', employeeController.getEmployeeLocation);
 router.post('/add', employeeController.addEmployee); //admin only
 router.put('/:id', employeeController.updateEmployee); //admin only
+router.put('/update-commission/:id', employeeController.updateCommissionRate);//admin only
 router.delete('/:employeeId', employeeController.deleteEmployee);
 
 //test

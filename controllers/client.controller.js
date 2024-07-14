@@ -146,28 +146,32 @@ async function getClientById(req, res) {
     }
 }
 
-//get client location by route id
+// get client locations by route id
 async function getClientsByRouteId(req, res) {
     try {
         const routeId = req.params.routeId;  // Get the route ID from request parameters
         if (!routeId) {
             return res.status(400).json({ message: "Route ID is required" });
         }
+
         const clients = await models.Client.findAll({
-            attributes: ['latitude', 'longitude'],  // Select only latitude and longitude
+            attributes: ['latitude', 'longitude', 'organization_name'],  // Select latitude, longitude, and organization name
             where: {
                 route_id: routeId  // Filter clients by the provided route ID
             }
         });
+
         if (clients.length === 0) {
             return res.status(404).json({ message: "No clients found for this route" });
         }
+
         res.status(200).json(clients);
     } catch (error) {
         console.error("Error fetching client locations by route ID:", error);
         res.status(500).json({ message: "Failed to fetch client locations by route ID" });
     }
 }
+
 
 // Update client status
 async function updateClientStatus(req, res) {

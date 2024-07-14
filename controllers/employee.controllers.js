@@ -573,6 +573,47 @@ async function updateEmployee(req, res) {
     }
 }
 
+async function updateCommissionRate(req, res) {
+    const employeeId = req.params.id;
+
+    const schema = {
+        commission_rate: { type: "number", optional: false }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(req.body, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    try {
+        const [updated] = await models.Employee.update(
+            { commission_rate: req.body.commission_rate },
+            { where: { id: employeeId } }
+        );
+
+        if (updated === 0) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Commission rate updated successfully"
+        });
+    } catch (error) {
+        console.error("Error updating commission rate:", error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
+
+
 // Soft delete an employee by ID
 async function deleteEmployee(req, res) {
     const employeeId = req.params.employeeId;
@@ -624,5 +665,6 @@ module.exports = {
     getEmployeeLocation: getEmployeeLocation,
     addEmployee: addEmployee,
     updateEmployee: updateEmployee,
+    updateCommissionRate:updateCommissionRate,
     deleteEmployee:deleteEmployee
 }
