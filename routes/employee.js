@@ -20,9 +20,6 @@ router.put('/update-commission/:id', employeeController.updateCommissionRate);//
 router.delete('/:employeeId', employeeController.deleteEmployee);
 
 
-router.post('/update-employee-password', employeeController.updateEmployeePasswordByAdmin);
-
-
 //test
 const testController = require('../controllers/test.controller');
 router.get('/:employeeId/admin-details', checkAuthMiddleware.adminAuthCheck,  testController.getEmployeeAdminDetails);
