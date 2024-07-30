@@ -1,6 +1,8 @@
 const express = require('express');
 const employeeController = require('../controllers/employee.controllers');
 const checkAuthMiddleware = require('../middleware/authentication');
+const imageUploader = require('../utils/image-uploader');
+
 
 const router = express.Router();
 
@@ -18,7 +20,11 @@ router.post('/add', employeeController.addEmployee); //admin only
 router.put('/:id', employeeController.updateEmployee); //admin only
 router.put('/update-commission/:id', employeeController.updateCommissionRate);//admin only
 router.delete('/:employeeId', employeeController.deleteEmployee);
-
+router.patch(
+    '/:employeeId/update/profile-picture',
+    imageUploader.upload.single('profile_picture'), // Ensure field name matches form data
+    employeeController.updateEmployeeProfilePicture
+);
 
 //test
 const testController = require('../controllers/test.controller');

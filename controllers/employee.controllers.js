@@ -652,6 +652,50 @@ async function deleteEmployee(req, res) {
     }
 }
 
+const baseUrl = 'http://api.gsutil.xyz/uploads/';
+
+async function updateEmployeeProfilePicture(req, res) {
+    const employeeId = req.params.employeeId;
+
+    console.log('Received employeeId:', employeeId); // Add logging here
+
+    if (!req.file) {
+        return res.status(400).json({
+            message: "Profile picture is required!"
+        });
+    }
+
+    const profilePictureUrl = `${baseUrl}${req.file.filename}`;
+    console.log('Generated profilePictureUrl:', profilePictureUrl); // Add logging here
+
+    try {
+        const result = await models.Employee.update(
+            { profile_picture: profilePictureUrl },
+            { where: { id: employeeId, deletedAt: null } }
+        );
+
+        console.log('Update result:', result); // Add logging here
+
+        if (result[0] === 0) {
+            return res.status(404).json({
+                message: "Employee not found!"
+            });
+        }
+
+        res.status(200).json({
+            message: "Profile picture updated successfully!",
+            url: profilePictureUrl
+        });
+    } catch (error) {
+        console.error('Error updating profile picture:', error); // Add logging here
+        res.status(500).json({
+            message: "Something went wrong!",
+        });
+    }
+}
+
+
+
 module.exports = {
     signUp: signUp,
     login: login,
@@ -666,5 +710,6 @@ module.exports = {
     addEmployee: addEmployee,
     updateEmployee: updateEmployee,
     updateCommissionRate:updateCommissionRate,
-    deleteEmployee:deleteEmployee
+    deleteEmployee:deleteEmployee,
+    updateEmployeeProfilePicture:updateEmployeeProfilePicture
 }
