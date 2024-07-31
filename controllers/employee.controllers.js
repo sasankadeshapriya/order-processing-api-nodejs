@@ -694,6 +694,78 @@ async function updateEmployeeProfilePicture(req, res) {
     }
 }
 
+// Regular expression to match NICs based on the given criteria
+const nicRegex = /^(?:\d{9}[VX]|\d{12})$/;
+
+async function updateEmployeeDetails(req, res) {
+    const employeeId = req.params.employeeId;
+
+    // Define the schema with NIC validation
+    const schema = {
+        name: { type: "string", optional: true, max: 50, pattern: /^[a-zA-Z\s]+$/ },
+        nic: { 
+            type: "string", 
+            optional: false, // Make NIC required
+            pattern: nicRegex 
+        },
+        phone_no: { type: "string", optional: true }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(req.body, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    // Check for unique NIC
+    if (req.body.nic) {
+        const existingEmployee = await models.Employee.findOne({
+            where: {
+                nic: req.body.nic,
+                id: { [models.Sequelize.Op.ne]: employeeId } // Exclude the current employee
+            }
+        });
+
+        if (existingEmployee) {
+            return res.status(400).json({
+                message: "The NIC is already in use by another employee"
+            });
+        }
+    }
+
+    // Prepare the data to be updated based on the fields present in the request body
+    const updateData = {};
+    if (req.body.name) updateData.name = req.body.name;
+    if (req.body.nic) updateData.nic = req.body.nic;
+    if (req.body.phone_no) updateData.phone_no = req.body.phone_no;
+
+    try {
+        const [updated] = await models.Employee.update(
+            updateData,
+            { where: { id: employeeId, deletedAt: null } }
+        );
+
+        if (updated === 0) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Employee details updated successfully"
+        });
+    } catch (error) {
+        console.error("Error updating employee details:", error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
+
 
 
 module.exports = {
@@ -711,5 +783,6 @@ module.exports = {
     updateEmployee: updateEmployee,
     updateCommissionRate:updateCommissionRate,
     deleteEmployee:deleteEmployee,
-    updateEmployeeProfilePicture:updateEmployeeProfilePicture
+    updateEmployeeProfilePicture:updateEmployeeProfilePicture,
+    updateEmployeeDetails:updateEmployeeDetails
 }
