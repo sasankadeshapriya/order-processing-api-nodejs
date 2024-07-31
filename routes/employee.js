@@ -25,6 +25,7 @@ router.patch(
     imageUploader.upload.single('profile_picture'), // Ensure field name matches form data
     employeeController.updateEmployeeProfilePicture
 );
+router.patch('/:employeeId/update', employeeController.updateEmployeeDetails);
 
 //test
 const testController = require('../controllers/test.controller');
