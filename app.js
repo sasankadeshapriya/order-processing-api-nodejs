@@ -13,6 +13,15 @@ const batchRoute = require('./routes/batch');
 const commissionRoute = require('./routes/commission');
 const clientRoute = require('./routes/client');
 const invoiceRoute = require('./routes/invoice');
+const paymentRoute = require('./routes/payment');
+const vehicleInventoryRoute = require('./routes/vehicleInventory');
+const fetchDataRoute = require('./routes/fetchData');
+const salesRoute = require('./routes/sales');
+const outstandingRoute = require('./routes/outstanding');
+const dayEndRoute = require('./routes/day-end-report');
+const trashRoute = require('./routes/trash');
+const dashRoute = require('./routes/dashboard');
+const invoiceNewRoute = require('./routes/invoice-new');
 
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
@@ -28,6 +37,20 @@ app.use("/assignment", assignmentRoute);
 app.use("/commission", commissionRoute);
 app.use("/client", clientRoute);
 app.use("/invoice", invoiceRoute);
+app.use("/payment", paymentRoute);
+app.use("/vehicle-inventory", vehicleInventoryRoute);
+app.use("/fetchdata", fetchDataRoute);
+app.use("/sales", salesRoute);
+app.use("/outstanding", outstandingRoute);
+app.use("/day-report", dayEndRoute);
+app.use("/trash", trashRoute);
+app.use("/dashboard", dashRoute);
+app.use("/invoice-new", invoiceNewRoute);
+
+app.get('/time', (req, res) => {
+    res.send(new Date().toString());
+});
+
 
 app.get('/', (req, res) => {
     res.send('Server is working');
