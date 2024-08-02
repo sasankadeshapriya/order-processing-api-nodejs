@@ -15,6 +15,10 @@ module.exports = {
       waypoints: {
         type: Sequelize.TEXT
       },
+      assigned: {
+        type: Sequelize.BOOLEAN, 
+        defaultValue: false 
+      },
       added_by_admin_id: {
         type: Sequelize.INTEGER
       },
@@ -25,6 +29,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE
+      },
+      deletedAt: {
+        type: Sequelize.DATE,
+        allowNull: true
       }
     });
   },

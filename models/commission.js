@@ -16,10 +16,12 @@ module.exports = (sequelize, DataTypes) => {
   Commission.init({
     emp_id: DataTypes.INTEGER,
     date: DataTypes.DATE,
-    commission: DataTypes.DECIMAL(10, 2)
+    commission: DataTypes.DECIMAL(10, 2),
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Commission',
+    paranoid: true
   });
   return Commission;
 };

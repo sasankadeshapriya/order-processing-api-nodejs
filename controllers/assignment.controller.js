@@ -36,6 +36,20 @@ async function createAssignment(req, res) {
     }
 
     try {
+        // Check if this employee is already assigned on the same date
+        const dailyEmployeeAssignmentCheck = await models.Assignment.findOne({
+            where: {
+                employee_id: assignData.employee_id,
+                assign_date: assignData.assign_date
+            }
+        });
+
+        if (dailyEmployeeAssignmentCheck) {
+            return res.status(400).json({
+                message: `Selected employee is already assigned on ${assignDate.toISOString().split('T')[0]}.`,
+            });
+        }
+
         // Check if an assignment already exists for the same employee, vehicle, route, and date
         const existingAssignment = await models.Assignment.findOne({
             where: {
@@ -48,8 +62,7 @@ async function createAssignment(req, res) {
 
         if (existingAssignment) {
             return res.status(400).json({
-                message: "Assignment already exists",
-                error: `An assignment already exists for employee ${assignData.employee_id}, vehicle ${assignData.vehicle_id}, route ${assignData.route_id}, and date ${assignData.assign_date}`
+                message: `An assignment already exists for selected employee, vehicle, and route on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -65,8 +78,7 @@ async function createAssignment(req, res) {
 
         if (conflictingAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Another employee is already assigned to route ${assignData.route_id} and vehicle ${assignData.vehicle_id} on ${assignData.assign_date}`
+                message: `Another employee is already assigned to the selected road and vehicle on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -81,12 +93,11 @@ async function createAssignment(req, res) {
 
         if (conflictingVehicleAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Another vehicle is already assigned to route ${assignData.route_id} on ${assignData.assign_date}`
+                message: `Another vehicle is already assigned to the selected road on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
-        // Check if the vehicle is already assigned to a speciic day
+        // Check if the vehicle is already assigned to a specific day
         const conflictingSameVehicleAssignment = await models.Assignment.findOne({
             where: {
                 assign_date: assignData.assign_date,
@@ -96,8 +107,7 @@ async function createAssignment(req, res) {
 
         if (conflictingSameVehicleAssignment && conflictingSameVehicleAssignment.route_id !== assignData.route_id) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `The vehicle is already assigned to a different route on ${assignData.assign_date}`
+                message: `Selected vehicle is already assigned to a different route on ${assignDate.toISOString().split('T')[0]}.`,
             });
         }
 
@@ -116,6 +126,7 @@ async function createAssignment(req, res) {
         });
     }
 }
+
 
 // Controller function to update an assignment
 async function updateAssignment(req, res) {
@@ -172,8 +183,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingEmployeeAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Employee ${updatedAssignData.employee_id} is already assigned on ${updatedAssignData.assign_date}`
+                message: `Selected employee is already assigned on ${updatedAssignData.assign_date.toISOString().split('T')[0]}`,
             });
         }
 
@@ -188,8 +198,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingVehicleAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Vehicle ${updatedAssignData.vehicle_id} is already assigned on ${updatedAssignData.assign_date}`
+                message: `Selected vehicle is already assigned on ${updatedAssignData.assign_date.toISOString().split('T')[0]}`,
             });
         }
 
@@ -204,8 +213,7 @@ async function updateAssignment(req, res) {
 
         if (conflictingRouteAssignment) {
             return res.status(400).json({
-                message: "Conflict",
-                error: `Route ${updatedAssignData.route_id} is already assigned on ${updatedAssignData.assign_date}`
+                message: `Selected route is already assigned on ${updatedAssignData.assign_date.toISOString().split('T')[0]}`,
             });
         }
 
@@ -225,24 +233,41 @@ async function updateAssignment(req, res) {
     }
 }
 
-//Controller for deleting a assignment
-async function deleteAssignment(req,res){
+// Controller for deleting an assignment
+async function deleteAssignment(req, res) {
     const assignmentId = req.params.assignmentId;
-    try{
+
+    try {
         const assignment = await models.Assignment.findByPk(assignmentId);
-        if(!assignment){
+        if (!assignment) {
             return res.status(404).json({
                 message: "Assignment not found"
             });
         }
+
+        // Check if there are active vehicle inventories assigned to this assignment
+        const activeVehicleInventory = await models.Vehicle_inventory.findOne({
+            where: {
+                assignment_id: assignmentId,
+                deletedAt: null  // Ensure the inventory isn't already deleted
+            }
+        });
+
+        if (activeVehicleInventory) {
+            return res.status(400).json({
+                message: "Cannot delete assignment because it has active vehicle inventories assigned to it."
+            });
+        }
+
+        // Soft delete the assignment
         await assignment.destroy();
         res.status(200).json({
-            message:"Assignment deleted successfully"
+            message: "Assignment deleted successfully"
         });
-    }catch(error){
+    } catch (error) {
         console.log(error);
         res.status(500).json({
-            message:"Something went wrong!"
+            message: "Something went wrong!"
         });
     }
 }

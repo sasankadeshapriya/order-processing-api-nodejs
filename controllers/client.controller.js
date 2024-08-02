@@ -7,8 +7,8 @@ const v = new validator();
 const clientSchema = {
     name: { type: "string", min: 2, max: 50 },
     organization_name: { type: "string", optional: false },
-    latitude: { type: "number", optional: false },
-    longitude: { type: "number", optional: false },
+    latitude: { type: "number", optional: true },
+    longitude: { type: "number", optional: true },
     phone_no: { type: "string", optional: false, pattern: /^\+?\d{9,13}$/},
     status: { type: "enum", values: ['verified', 'not verified'], optional: true },
     discount: { type: "number", optional: false },
@@ -97,7 +97,7 @@ async function updateClient(req, res) {
         res.status(200).json({ message: "Client updated successfully", client });
     } catch (error) {
         console.error("Error updating client:", error);
-        res.status(500).json({ message: "Failed to update client" });
+        res.status(500).json({ message: "Failed to update client", error: error.message });
     }
 }
 
@@ -111,6 +111,7 @@ async function deleteClient(req, res) {
             return res.status(404).json({ message: "Client not found" });
         }
 
+        //client softdelete
         await client.destroy();
         res.status(200).json({ message: "Client deleted successfully" });
     } catch (error) {
@@ -145,10 +146,65 @@ async function getClientById(req, res) {
     }
 }
 
+// get client locations by route id
+async function getClientsByRouteId(req, res) {
+    try {
+        const routeId = req.params.routeId;  // Get the route ID from request parameters
+        if (!routeId) {
+            return res.status(400).json({ message: "Route ID is required" });
+        }
+
+        const clients = await models.Client.findAll({
+            attributes: ['latitude', 'longitude', 'organization_name'],  // Select latitude, longitude, and organization name
+            where: {
+                route_id: routeId  // Filter clients by the provided route ID
+            }
+        });
+
+        if (clients.length === 0) {
+            return res.status(404).json({ message: "No clients found for this route" });
+        }
+
+        res.status(200).json(clients);
+    } catch (error) {
+        console.error("Error fetching client locations by route ID:", error);
+        res.status(500).json({ message: "Failed to fetch client locations by route ID" });
+    }
+}
+
+
+// Update client status
+async function updateClientStatus(req, res) {
+    try {
+        const clientId = req.params.clientId;
+        const { status } = req.body;
+
+        // Validate status
+        if (!['verified', 'not verified'].includes(status)) {
+            return res.status(400).json({ message: "Invalid status value" });
+        }
+
+        const client = await models.Client.findByPk(clientId);
+        if (!client) {
+            return res.status(404).json({ message: "Client not found" });
+        }
+
+        client.status = status;
+        await client.save();
+
+        res.status(200).json({ message: "Client status updated successfully", client });
+    } catch (error) {
+        console.error("Error updating client status:", error);
+        res.status(500).json({ message: "Failed to update client status" });
+    }
+}
+
 module.exports = {
     createClient:createClient,
     updateClient:updateClient,
     deleteClient:deleteClient,
     getAllClients:getAllClients,
-    getClientById:getClientById
+    getClientById:getClientById,
+    getClientsByRouteId:getClientsByRouteId,
+    updateClientStatus:updateClientStatus
 }

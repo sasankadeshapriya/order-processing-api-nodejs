@@ -1,4 +1,5 @@
 const models = require('../models');
+const { Invoice, InvoiceDetail, Product } = require('../models');
 const validator = require('fastest-validator');
 const { Op } = require('sequelize');
 
@@ -15,7 +16,7 @@ const invoiceSchema = {
     payment_option: { type: "enum", values: ['credit', 'cash', 'cheque', 'cash-half'] },
     products: { type: "array", items: { type: "object", props: {
         product_id: { type: "number" },
-        batch_id: { type: "number" },
+        batch_id: { type: "string" },
         quantity: { type: "number" },
         sum: { type: "number" }
     }}}
@@ -209,13 +210,13 @@ async function deleteInvoice(req, res) {
             return res.status(404).json({ message: "Invoice not found" });
         }
 
-        // Delete associated invoice details using reference_number
-        await models.InvoiceDetail.destroy({ where: { reference_number: invoice.reference_number } });
+        // Soft delete associated invoice details using reference_number
+        await models.InvoiceDetail.update({ deletedAt: new Date() }, { where: { reference_number: invoice.reference_number } });
 
-        // Delete associated payments using reference_number
-        await models.Payment.destroy({ where: { reference_number: invoice.reference_number } });
+        // Soft delete associated payments using reference_number
+        await models.Payment.update({ deletedAt: new Date() }, { where: { reference_number: invoice.reference_number } });
 
-        // Delete the invoice itself
+        // Soft delete the invoice itself
         await invoice.destroy();
 
         res.status(200).json({ message: "Invoice deleted successfully" });
@@ -254,6 +255,46 @@ async function getAllInvoices(req, res) {
     }
 }
 
+// Function to get invoices for report
+async function getInvoiceReportsByEmployeeId(req, res) {
+    try {
+        const employeeId = req.params.employeeId;
+        const invoices = await Invoice.findAll({
+            where: { employee_id: employeeId }
+        });
+
+        if (invoices.length === 0) {
+            return res.status(404).json({ message: "No invoices found for this employee." });
+        }
+
+        // Fetch details and products for each invoice
+        const results = await Promise.all(invoices.map(async (invoice) => {
+            const details = await InvoiceDetail.findAll({
+                where: { reference_number: invoice.reference_number }
+            });
+
+            // Fetch products for each detail
+            const detailedResults = await Promise.all(details.map(async (detail) => {
+                const product = await Product.findByPk(detail.product_id);
+                return {
+                    ...detail.dataValues,
+                    Product: product
+                };
+            }));
+
+            return {
+                ...invoice.dataValues,
+                InvoiceDetails: detailedResults
+            };
+        }));
+
+        res.status(200).json(results);
+    } catch (error) {
+        console.error("Error fetching invoice reports by employee ID:", error);
+        res.status(500).json({ message: "Failed to fetch invoice reports" });
+    }
+}
+
 
 
 module.exports = {
@@ -261,5 +302,6 @@ module.exports = {
     updateInvoice:updateInvoice,
     deleteInvoice:deleteInvoice,
     getInvoiceById:getInvoiceById,
-    getAllInvoices,getAllInvoices
+    getAllInvoices:getAllInvoices,
+    getInvoiceReportsByEmployeeId:getInvoiceReportsByEmployeeId
 }

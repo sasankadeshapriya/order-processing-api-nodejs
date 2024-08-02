@@ -2,6 +2,9 @@ const models = require('../models');
 const moment = require('moment'); 
 const Validator = require('fastest-validator');
 
+const { Employee, Commission, Sequelize } = require('../models');
+const { Op } = Sequelize;
+
 async function addOrUpdateCommission(req, res) {
     
     const schema = {
@@ -41,8 +44,11 @@ async function addOrUpdateCommission(req, res) {
 
         if (existingCommission) {
             console.log("Record found for emp_id", emp_id, "and date", formattedDate);
-            // If a record exists, update the commission amount
-            existingCommission.commission = roundedCommission;
+            // Ensure existingCommission.commission is a number
+            const existingCommissionValue = parseFloat(existingCommission.commission);
+            // If a record exists, update the commission amount by adding the new value
+            const updatedCommission = parseFloat((existingCommissionValue + roundedCommission).toFixed(2));
+            existingCommission.commission = updatedCommission;
             await existingCommission.save();
             return res.status(200).json({ message: "Commission updated successfully", commission: existingCommission });
         } else {
@@ -60,7 +66,6 @@ async function addOrUpdateCommission(req, res) {
         return res.status(500).json({ message: "Failed to add/update commission" });
     }
 }
-
 
 
 async function getAllCommissions(req, res) {
@@ -115,8 +120,133 @@ async function getAllCommissions(req, res) {
     }
 }
 
+async function getCommissionsByEmpId(req, res) {
+    try {
+      const empId = req.params.empId;
+      const commissions = await models.Commission.findAll({
+        where: { emp_id: empId }
+      });
+      if (commissions.length === 0) {
+        return res.status(404).json({ message: "No commissions found for employee ID " + empId });
+      }
+      return res.status(200).json({ commissions });
+    } catch (error) {
+      console.error("Failed to fetch commissions by emp ID: ", error);
+      return res.status(500).json({ message: "Failed to fetch commissions by emp ID" });
+    }
+  }
+
+  async function getCommissionReport(req, res) {
+    try {
+        let dateFilter = {};
+        const { filter = 'month', start_date, end_date } = req.query;
+
+        switch (filter) {
+            case 'day':
+                dateFilter = {
+                    date: {
+                        [Op.gte]: moment().startOf('day').toDate(),
+                        [Op.lt]: moment().endOf('day').toDate()
+                    }
+                };
+                break;
+            case 'week':
+                dateFilter = {
+                    date: {
+                        [Op.gte]: moment().startOf('week').toDate(),
+                        [Op.lt]: moment().endOf('week').toDate()
+                    }
+                };
+                break;
+            case 'month':
+                dateFilter = {
+                    date: {
+                        [Op.gte]: moment().startOf('month').toDate(),
+                        [Op.lt]: moment().endOf('month').toDate()
+                    }
+                };
+                break;
+            case 'year':
+                dateFilter = {
+                    date: {
+                        [Op.gte]: moment().startOf('year').toDate(),
+                        [Op.lt]: moment().endOf('year').toDate()
+                    }
+                };
+                break;
+            case 'all':
+                dateFilter = {};
+                break;
+            case 'custom':
+                if (start_date && end_date) {
+                    dateFilter = {
+                        date: {
+                            [Op.gte]: moment(start_date).startOf('day').toDate(),
+                            [Op.lt]: moment(end_date).endOf('day').toDate()
+                        }
+                    };
+                } else {
+                    return res.status(400).json({ message: "Custom range requires start_date and end_date" });
+                }
+                break;
+            default:
+                dateFilter = {
+                    date: {
+                        [Op.gte]: moment().startOf('month').toDate(),
+                        [Op.lt]: moment().endOf('month').toDate()
+                    }
+                };
+                break;
+        }
+
+        const commissions = await Commission.findAll({
+            where: {
+                ...dateFilter
+            },
+            include: [{
+                model: Employee,
+                attributes: ['name', 'email'],
+                paranoid: false
+            }]
+        });
+
+        const totalCommission = commissions.reduce((sum, commission) => sum + parseFloat(commission.commission), 0);
+
+        const employeeCommissions = commissions.reduce((acc, commission) => {
+            const employeeId = commission.emp_id;
+            if (!acc[employeeId]) {
+                acc[employeeId] = {
+                    name: commission.Employee.name,
+                    email: commission.Employee.email,
+                    total_commission: 0
+                };
+            }
+            acc[employeeId].total_commission += parseFloat(commission.commission);
+            return acc;
+        }, {});
+
+        const employeeList = Object.values(employeeCommissions).map(employee => ({
+            name: employee.name,
+            email: employee.email,
+            total_commission: employee.total_commission.toFixed(2)
+        }));
+
+        const top10Employees = employeeList.sort((a, b) => b.total_commission - a.total_commission).slice(0, 10);
+
+        return res.status(200).json({
+            total_commission: totalCommission.toFixed(2),
+            top10_employees: top10Employees,
+            employee_list: employeeList
+        });
+    } catch (error) {
+        console.error("Failed to fetch commission report: ", error);
+        return res.status(500).json({ message: "Failed to fetch commission report" });
+    }
+}
 
 module.exports = {
     addOrUpdateCommission: addOrUpdateCommission,
-    getAllCommissions: getAllCommissions
+    getAllCommissions: getAllCommissions,
+    getCommissionsByEmpId: getCommissionsByEmpId,
+    getCommissionReport: getCommissionReport
 }

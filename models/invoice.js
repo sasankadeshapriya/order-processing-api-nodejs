@@ -25,10 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     balance: DataTypes.DECIMAL(10, 2),
     discount: DataTypes.DECIMAL(10, 2),
     credit_period_end_date: DataTypes.DATE,
-    payment_option: DataTypes.ENUM('credit', 'cash', 'cheque','cash-half')
+    payment_option: DataTypes.ENUM('credit', 'cash', 'cheque','cash-half'),
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Invoice',
+    paranoid: true
   });
   return Invoice;
 };

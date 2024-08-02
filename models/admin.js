@@ -18,10 +18,12 @@ module.exports = (sequelize, DataTypes) => {
     name: DataTypes.STRING,
     password: DataTypes.STRING,
     email: DataTypes.STRING,
-    otp: DataTypes.INTEGER
+    otp: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Admin',
+    paranoid: true
   });
   return Admin;
 };

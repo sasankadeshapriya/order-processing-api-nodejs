@@ -23,6 +23,7 @@ const trashRoute = require('./routes/trash');
 const dashRoute = require('./routes/dashboard');
 const invoiceNewRoute = require('./routes/invoice-new');
 
+
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
 
@@ -47,10 +48,10 @@ app.use("/trash", trashRoute);
 app.use("/dashboard", dashRoute);
 app.use("/invoice-new", invoiceNewRoute);
 
+
 app.get('/time', (req, res) => {
     res.send(new Date().toString());
 });
-
 
 app.get('/', (req, res) => {
     res.send('Server is working');

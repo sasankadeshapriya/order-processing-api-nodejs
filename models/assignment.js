@@ -22,10 +22,12 @@ module.exports = (sequelize, DataTypes) => {
     assign_date: DataTypes.DATE,
     vehicle_id: DataTypes.INTEGER,
     route_id: DataTypes.INTEGER,
-    added_by_admin_id: DataTypes.INTEGER
+    added_by_admin_id: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Assignment',
+    paranoid: true
   });
   return Assignment;
 };

@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Batch.belongsTo(models.Product, { foreignKey: 'product_id' });
       Batch.belongsTo(models.Admin, { foreignKey: 'added_by_admin_id' });
+      Batch.hasMany(models.Vehicle_inventory, { foreignKey: 'sku', sourceKey: 'sku' });
     }
   }
   Batch.init({
@@ -24,10 +25,12 @@ module.exports = (sequelize, DataTypes) => {
     credit_price: DataTypes.DECIMAL(10, 2),
     quantity: DataTypes.DECIMAL(10, 2),
     expire_date: DataTypes.DATE,
-    added_by_admin_id: DataTypes.INTEGER
+    added_by_admin_id: DataTypes.INTEGER,
+    deletedAt: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'Batch',
+    paranoid: true
   });
   return Batch;
 };

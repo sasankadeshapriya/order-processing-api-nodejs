@@ -7,7 +7,6 @@ const otpGenerator = require('otp-generator');
 
 //Employee signup
 function signUp(req, res){
-    
     models.Employee.findOne({where:{email:req.body.email}}).then(result => {
         if(result){
             res.status(409).json({
@@ -15,15 +14,29 @@ function signUp(req, res){
             });
         }else{
             const user = {
-                name: req.body.name,
+                name: req.body.name, 
                 email:req.body.email,
-                password: req.body.password 
+                password: req.body.password,
+                nic: req.body.nic,
+                phone_no: req.body.phone_no,
+                commission_rate: req.body.commission_rate,
+                added_by_admin_id: req.body.added_by_admin_id,
+                current_location: req.body.current_location || null,
+                assigned: req.body.assigned || false,
+                profile_picture: req.body.profile_picture || null
             }
             
             const schema = {
                 name: { type: "string", optional: false, max: 50, pattern: /^[a-zA-Z\s]+$/ },
                 email: { type: "email", optional: false, max: 35 },
-                password: { type: "string", optional: false, min: 8 }
+                password: { type: "string", optional: false, min: 8 },
+                nic: { type: "string", optional: false }, 
+                phone_no: { type: "string", optional: false },
+                commission_rate: { type: "number", optional: false }, 
+                added_by_admin_id: { type: "number", optional: false }, 
+                current_location: { type: "string", optional: true }, 
+                assigned: { type: "boolean", optional: true },
+                profile_picture: { type: "string", optional: true }
             };
             
             const vldator = new validator();
@@ -74,15 +87,16 @@ function login(req, res) {
                     const otp = Math.floor(1000 + Math.random() * 9000);
 
                     const transporter = nodemailer.createTransport({
-                        service: 'gmail',
+                        host: process.env.EMAIL_HOST,
+                        port: process.env.EMAIL_PORT,
                         auth: {
-                            user: process.env.GMAIL_USER,
-                            pass: process.env.GMAIL_PASS
+                            user: process.env.EMAIL_USER,
+                            pass: process.env.EMAIL_PASS
                         }
                     });
 
                     const mailOptions = {
-                        from: process.env.GMAIL_USER,
+                        from: process.env.EMAIL_USER,
                         to: user.email,
                         subject: 'OTP for login verification',
                         text: `Your OTP for login is: ${otp}`
@@ -202,15 +216,16 @@ function forgotPassword(req, res) {
             const otp = Math.floor(1000 + Math.random() * 9000);
 
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
                 auth: {
-                    user: process.env.GMAIL_USER,
-                    pass: process.env.GMAIL_PASS
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
                 }
             });
 
             const mailOptions = {
-                from: process.env.GMAIL_USER,
+                from: process.env.EMAIL_USER,
                 to: user.email,
                 subject: 'OTP for Password Reset',
                 text: `Your OTP for password reset is: ${otp}`
@@ -311,6 +326,447 @@ function changePassword(req, res) {
     });
 }
 
+// Employee controller functions
+
+async function getAllEmployees(req, res) {
+    try {
+        // Fetch all employees from the database, including their assigned status
+        const employees = await models.Employee.findAll({
+            attributes: ['id','name','email','nic','phone_no','commission_rate','assigned','profile_picture'], // Include only necessary fields
+            raw: true // Get raw data instead of Sequelize instances
+        });
+
+        // If there are no employees found
+        if (!employees || employees.length === 0) {
+            return res.status(404).json({ message: "No employees found" });
+        }
+
+        // Return the fetched employees
+        res.status(200).json({ employees: employees });
+    } catch (error) {
+        console.error("Error fetching employees:", error);
+        res.status(500).json({ message: "Failed to fetch employees" });
+    }
+}
+
+
+
+// Function to get employee details by ID
+async function getEmployeeDetails(req, res) {
+    try {
+        const employeeId = req.params.employeeId;
+
+        // Find the employee by ID in the database
+        const employee = await models.Employee.findByPk(employeeId, {
+            attributes: ['id', 'name', 'email', 'nic', 'phone_no', 'commission_rate', 'current_location', 'assigned', 'profile_picture'], // Include only necessary fields
+            raw: true // Get raw data instead of Sequelize instances
+        });
+
+        // If employee with the given ID is not found
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        // If employee is found, return the details
+        res.status(200).json({ employee: employee });
+    } catch (error) {
+        console.error("Error fetching employee details:", error);
+        res.status(500).json({ message: "Failed to fetch employee details" });
+    }
+}
+
+//update employee locations
+async function updateEmployeeLocation(req, res) {
+    try {
+        const employeeId = req.params.employeeId;
+        const locationData = req.body;
+
+        console.log("Received location data:", locationData); // Debug print
+
+        // Find the employee by ID in the database
+        const employee = await models.Employee.findByPk(employeeId);
+
+        console.log("Employee found:", employee); // Debug print
+
+        // If employee with the given ID is not found
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        // Convert location data to JSON string
+        const locationJsonString = JSON.stringify(locationData);
+
+        console.log("Location JSON string:", locationJsonString); // Debug print
+
+        // Update employee's current_location field with the provided location data
+        employee.current_location = locationJsonString;
+
+        console.log("Updated employee:", employee); // Debug print
+
+        // Save the updated employee data
+        await employee.save();
+
+        console.log("Employee saved successfully."); // Debug print
+
+        // Return success response
+        res.status(200).json({ message: "Employee location updated successfully", employee: employee });
+    } catch (error) {
+        console.error("Error updating employee location:", error);
+        res.status(500).json({ message: "Failed to update employee location" });
+    }
+}
+
+async function getEmployeeLocation(req, res) {
+    try {
+        const employeeId = req.params.employeeId;
+
+        // Find the employee by ID in the database
+        const employee = await models.Employee.findByPk(employeeId);
+
+        // If the employee with the given ID is not found
+        if (!employee) {
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
+        // Parse the location data from the stored JSON string
+        const locationData = JSON.parse(employee.current_location);
+
+        // Return the location data
+        res.status(200).json({ location: locationData });
+    } catch (error) {
+        console.error("Error retrieving employee location:", error);
+        res.status(500).json({ message: "Failed to retrieve employee location" });
+    }
+}
+
+// add employee
+function addEmployee(req, res) {
+    models.Employee.findOne({ where: { email: req.body.email } }).then(result => {
+        if (result) {
+            res.status(409).json({
+                message: "Email already exists!",
+            });
+        } else {
+            const user = {
+                name: req.body.name || null,
+                email: req.body.email,
+                password: req.body.password,
+                nic: req.body.nic || null,
+                phone_no: req.body.phone_no || null,
+                commission_rate: req.body.commission_rate || null,
+                added_by_admin_id: req.body.added_by_admin_id,
+                current_location: req.body.current_location || null,
+                assigned: req.body.assigned || false,
+                profile_picture: req.body.profile_picture || null
+            };
+            
+            const schema = {
+                name: { type: "string", optional: true, max: 50, pattern: /^[a-zA-Z\s]+$/ },
+                email: { type: "email", optional: false, max: 35 },
+                password: { type: "string", optional: false, min: 8 },
+                nic: { type: "string", optional: true }, 
+                phone_no: { type: "string", optional: true },
+                commission_rate: { type: "number", optional: true }, 
+                added_by_admin_id: { type: "number", optional: false }, 
+                current_location: { type: "string", optional: true }, 
+                assigned: { type: "boolean", optional: true },
+                profile_picture: { type: "string", optional: true }
+            };
+            
+            const vldator = new validator();
+            const validationResponse = vldator.validate(user, schema);
+            
+            if (validationResponse !== true) {
+                return res.status(400).json({
+                    message: "Validation failed",
+                    error: validationResponse
+                });
+            }
+            
+            bcryptjs.genSalt(10, function (err, salt) {
+                bcryptjs.hash(user.password, salt, function (err, hash) {
+                    user.password = hash;
+
+                    models.Employee.create(user).then(result => {
+                        res.status(201).json({
+                            message: "User created successfully",
+                        });
+                    }).catch(error => {
+                        console.log(error);
+                        res.status(500).json({
+                            message: "Something went wrong!",
+                        });
+                    });
+                });
+            });
+        }
+    }).catch(error => {
+        console.log(error);
+        res.status(500).json({
+            message: "Something went wrong!",
+        });
+    });
+}
+
+async function updateEmployee(req, res) {
+    const employeeId = req.params.id;
+
+    const schema = {
+        email: { type: "email", optional: false, max: 35 },
+        password: { type: "string", optional: true, min: 8 },
+        commission_rate: { type: "number", optional: true }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(req.body, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    try {
+        const existingEmployee = await models.Employee.findOne({
+            where: {
+                email: req.body.email,
+                id: { [models.Sequelize.Op.ne]: employeeId }
+            }
+        });
+
+        if (existingEmployee) {
+            return res.status(409).json({
+                message: "Email already exists!"
+            });
+        }
+
+        let updatedData = {
+            email: req.body.email,
+            commission_rate: req.body.commission_rate
+        };
+
+        if (req.body.password) {
+            const salt = await bcryptjs.genSalt(10);
+            const hash = await bcryptjs.hash(req.body.password, salt);
+            updatedData.password = hash;
+        }
+
+        const [updated] = await models.Employee.update(updatedData, {
+            where: { id: employeeId }
+        });
+
+        if (updated === 0) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Employee updated successfully"
+        });
+    } catch (error) {
+        console.error("Error updating employee:", error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
+
+async function updateCommissionRate(req, res) {
+    const employeeId = req.params.id;
+
+    const schema = {
+        commission_rate: { type: "number", optional: false }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(req.body, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    try {
+        const [updated] = await models.Employee.update(
+            { commission_rate: req.body.commission_rate },
+            { where: { id: employeeId } }
+        );
+
+        if (updated === 0) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Commission rate updated successfully"
+        });
+    } catch (error) {
+        console.error("Error updating commission rate:", error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
+
+
+// Soft delete an employee by ID
+async function deleteEmployee(req, res) {
+    const employeeId = req.params.employeeId;
+    try {
+        const employee = await models.Employee.findByPk(employeeId);
+        if (!employee) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        // Check if the employee is currently assigned to any assignment
+        const activeAssignment = await models.Assignment.findOne({
+            where: {
+                employee_id: employeeId,
+                deletedAt: null  // Ensure the assignment isn't already deleted
+            }
+        });
+
+        if (activeAssignment) {
+            return res.status(400).json({
+                message: "Cannot delete employee because they are currently assigned to an assignment."
+            });
+        }
+
+        // Soft delete the employee
+        await employee.destroy();
+        res.status(200).json({
+            message: "Employee deleted successfully"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
+
+const baseUrl = 'http://api.gsutil.xyz/uploads/';
+
+async function updateEmployeeProfilePicture(req, res) {
+    const employeeId = req.params.employeeId;
+
+    console.log('Received employeeId:', employeeId); // Add logging here
+
+    if (!req.file) {
+        return res.status(400).json({
+            message: "Profile picture is required!"
+        });
+    }
+
+    const profilePictureUrl = `${baseUrl}${req.file.filename}`;
+    console.log('Generated profilePictureUrl:', profilePictureUrl); // Add logging here
+
+    try {
+        const result = await models.Employee.update(
+            { profile_picture: profilePictureUrl },
+            { where: { id: employeeId, deletedAt: null } }
+        );
+
+        console.log('Update result:', result); // Add logging here
+
+        if (result[0] === 0) {
+            return res.status(404).json({
+                message: "Employee not found!"
+            });
+        }
+
+        res.status(200).json({
+            message: "Profile picture updated successfully!",
+            url: profilePictureUrl
+        });
+    } catch (error) {
+        console.error('Error updating profile picture:', error); // Add logging here
+        res.status(500).json({
+            message: "Something went wrong!",
+        });
+    }
+}
+
+// Regular expression to match NICs based on the given criteria
+const nicRegex = /^(?:\d{9}[VX]|\d{12})$/;
+
+async function updateEmployeeDetails(req, res) {
+    const employeeId = req.params.employeeId;
+
+    // Define the schema with NIC validation
+    const schema = {
+        name: { type: "string", optional: true, max: 50, pattern: /^[a-zA-Z\s]+$/ },
+        nic: { 
+            type: "string", 
+            optional: false, // Make NIC required
+            pattern: nicRegex 
+        },
+        phone_no: { type: "string", optional: true }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(req.body, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    // Check for unique NIC
+    if (req.body.nic) {
+        const existingEmployee = await models.Employee.findOne({
+            where: {
+                nic: req.body.nic,
+                id: { [models.Sequelize.Op.ne]: employeeId } // Exclude the current employee
+            }
+        });
+
+        if (existingEmployee) {
+            return res.status(400).json({
+                message: "The NIC is already in use by another employee"
+            });
+        }
+    }
+
+    // Prepare the data to be updated based on the fields present in the request body
+    const updateData = {};
+    if (req.body.name) updateData.name = req.body.name;
+    if (req.body.nic) updateData.nic = req.body.nic;
+    if (req.body.phone_no) updateData.phone_no = req.body.phone_no;
+
+    try {
+        const [updated] = await models.Employee.update(
+            updateData,
+            { where: { id: employeeId, deletedAt: null } }
+        );
+
+        if (updated === 0) {
+            return res.status(404).json({
+                message: "Employee not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Employee details updated successfully"
+        });
+    } catch (error) {
+        console.error("Error updating employee details:", error);
+        return res.status(500).json({
+            message: "Something went wrong!"
+        });
+    }
+}
+
+
 
 module.exports = {
     signUp: signUp,
@@ -318,5 +774,15 @@ module.exports = {
     verifyOTP: verifyOTP,
     forgotPassword:forgotPassword,
     verifyPasswordChangeOTP:verifyPasswordChangeOTP,
-    changePassword:changePassword
-} 
+    changePassword:changePassword,
+    getAllEmployees: getAllEmployees,
+    getEmployeeDetails: getEmployeeDetails,
+    updateEmployeeLocation: updateEmployeeLocation,
+    getEmployeeLocation: getEmployeeLocation,
+    addEmployee: addEmployee,
+    updateEmployee: updateEmployee,
+    updateCommissionRate:updateCommissionRate,
+    deleteEmployee:deleteEmployee,
+    updateEmployeeProfilePicture:updateEmployeeProfilePicture,
+    updateEmployeeDetails:updateEmployeeDetails
+}

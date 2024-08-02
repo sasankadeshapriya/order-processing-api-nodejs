@@ -74,15 +74,16 @@ function login(req, res) {
                     const otp = Math.floor(1000 + Math.random() * 9000);
 
                     const transporter = nodemailer.createTransport({
-                        service: 'gmail',
+                        host: process.env.EMAIL_HOST,
+                        port: process.env.EMAIL_PORT,
                         auth: {
-                            user: process.env.GMAIL_USER,
-                            pass: process.env.GMAIL_PASS
+                            user: process.env.EMAIL_USER,
+                            pass: process.env.EMAIL_PASS
                         }
                     });
 
                     const mailOptions = {
-                        from: process.env.GMAIL_USER,
+                        from: process.env.EMAIL_USER,
                         to: user.email,
                         subject: 'OTP for login verification',
                         text: `Your OTP for login is: ${otp}`
@@ -203,15 +204,16 @@ function forgotPassword(req, res) {
             const otp = Math.floor(1000 + Math.random() * 9000);
 
             const transporter = nodemailer.createTransport({
-                service: 'gmail',
+                host: process.env.EMAIL_HOST,
+                port: process.env.EMAIL_PORT,
                 auth: {
-                    user: process.env.GMAIL_USER,
-                    pass: process.env.GMAIL_PASS
+                    user: process.env.EMAIL_USER,
+                    pass: process.env.EMAIL_PASS
                 }
             });
 
             const mailOptions = {
-                from: process.env.GMAIL_USER,
+                from: process.env.EMAIL_USER,
                 to: user.email,
                 subject: 'OTP for Password Reset',
                 text: `Your OTP for password reset is: ${otp}`
@@ -312,6 +314,100 @@ function changePassword(req, res) {
     });
 }
 
+// Change admin password without OTP verification
+function adminPasswordChange(req, res) {
+    const { email, newPassword } = req.body;
+
+    const user = {
+        password: newPassword
+    }
+
+    const schema = {
+        password: { type: "string", optional: false, min: 8 }
+    };
+
+    const vldator = new validator();
+    const validationResponse = vldator.validate(user, schema);
+
+    if (validationResponse !== true) {
+        return res.status(400).json({
+            message: "Validation failed",
+            error: validationResponse
+        });
+    }
+
+    models.Admin.findOne({ where: { email: email } }).then(user => {
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found!",
+            });
+        }
+
+        bcryptjs.genSalt(10, function (err, salt) {
+            if (err) {
+                console.log(err);
+                return res.status(500).json({
+                    message: "Error generating salt for hashing!",
+                });
+            }
+
+            bcryptjs.hash(newPassword, salt, function (err, hash) {
+                if (err) {
+                    console.log(err);
+                    return res.status(500).json({
+                        message: "Error hashing the password!",
+                    });
+                }
+
+                user.update({ password: hash }).then(updatedUser => {
+                    res.status(200).json({
+                        message: "Password changed successfully!",
+                    });
+                }).catch(error => {
+                    console.log(error);
+                    res.status(500).json({
+                        message: "Something went wrong while updating the password!",
+                    });
+                });
+            });
+        });
+    }).catch(error => {
+        console.log(error);
+        res.status(500).json({
+            message: "Something went wrong!",
+        });
+    });
+}
+
+// Delete admin account using email
+function deleteAccount(req, res) {
+    const { email } = req.body;
+
+    models.Admin.findOne({ where: { email: email } }).then(user => {
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found!",
+            });
+        }
+
+        user.destroy().then(() => {
+            res.status(200).json({
+                message: "User account deleted successfully!",
+            });
+        }).catch(error => {
+            console.log(error);
+            res.status(500).json({
+                message: "Something went wrong while deleting the account!",
+            });
+        });
+    }).catch(error => {
+        console.log(error);
+        res.status(500).json({
+            message: "Something went wrong!",
+        });
+    });
+}
+
 
 module.exports = {
     signUp: signUp,
@@ -319,6 +415,8 @@ module.exports = {
     verifyOTP: verifyOTP,
     forgotPassword:forgotPassword,
     verifyPasswordChangeOTP:verifyPasswordChangeOTP,
-    changePassword:changePassword
+    changePassword:changePassword,
+    adminPasswordChange: adminPasswordChange,
+    deleteAccount: deleteAccount
 } 
 

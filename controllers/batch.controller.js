@@ -148,6 +148,24 @@ async function deleteBatch(req, res) {
                 message: "Batch not found"
             });
         }
+
+        // Check if there are any looked vehicle inventories related to this product
+        const lockedInventories = await models.Vehicle_inventory.findOne({
+            where: {
+                product_id: productId,
+                looked: true  // Check for locked inventories
+            }
+        });
+
+        if (lockedInventories) {
+            return res.status(400).json({
+                message: "Cannot delete batch because it has locked inventories."
+            });
+        }
+
+        // Soft delete related vehicle inventories
+        await models.Vehicle_inventory.update({ deletedAt: new Date() }, { where: { sku: batch.sku } });
+
         await batch.destroy();
         res.status(200).json({
             message: "Batch deleted successfully"
