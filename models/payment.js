@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
     state: DataTypes.ENUM('verified', 'not-verified', 'rejected'),
     notes: DataTypes.STRING,
     added_by_employee_id: DataTypes.INTEGER,
+    bank:DataTypes.STRING,
+    cheque_number:DataTypes.STRING,
+    cheque_date:DataTypes.DATEONLY,
     deletedAt: DataTypes.DATE
   }, {
     sequelize,

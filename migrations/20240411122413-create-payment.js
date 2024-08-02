@@ -27,6 +27,18 @@ module.exports = {
       added_by_employee_id: {
         type: Sequelize.INTEGER
       },
+      bank: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      cheque_number: {
+        allowNull: true,
+        type: Sequelize.STRING
+      },
+      cheque_date: {
+        allowNull: true,
+        type: Sequelize.DATEONLY
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
