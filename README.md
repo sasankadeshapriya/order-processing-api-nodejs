@@ -2,6 +2,8 @@
 
 A RESTful API providing endpoints for CRUD operations and user authentication, supporting the integration between the web and mobile applications.
 
+![order-processing](https://github.com/user-attachments/assets/d3ecb8dd-a97d-4954-b998-66176a1535d9)
+
 ## How to Setup on local
 
 01. Clone the Repository
