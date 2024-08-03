@@ -1,7 +1,9 @@
 const models = require('../models');
-const { Invoice, InvoiceDetail, Payment } = require('../models');
+const { Invoice, InvoiceDetail, Payment, Commission, Employee } = require('../models');
 const validator = require('fastest-validator');
 const { Op } = require('sequelize');
+const moment = require('moment');
+
 
 const v = new validator();
 
@@ -46,6 +48,12 @@ async function createOrUpdateInvoice(req, res) {
             products, auto, amount_allocated
         } = req.body;
 
+        const employee = await models.Employee.findByPk(employee_id);
+        if (!employee) {
+            await t.rollback();
+            return res.status(404).json({ message: "Employee not found" });
+        }
+
         const existingInvoice = await models.Invoice.findOne({ where: { reference_number }, transaction: t });
         if (existingInvoice) {
             await t.rollback();
@@ -84,6 +92,17 @@ async function createOrUpdateInvoice(req, res) {
             }, { transaction: t })
         ));
 
+        // Calculate commission and update
+        const commissionRate = employee.commission_rate;
+        const commissionValue = total_amount * (commissionRate / 100);
+        const commissionDate = moment().startOf('day').format('YYYY-MM-DD HH:mm:ss');
+        await addOrUpdateCommission({
+            emp_id: employee_id,
+            date: commissionDate,
+            commission: commissionValue,
+            t
+        });
+        
         if (!auto && paid_amount > 0) {
             await createPaymentRecord({
                 reference_number, amount: paid_amount, payment_option, employee_id, bank, cheque_number, cheque_date, t
@@ -98,6 +117,50 @@ async function createOrUpdateInvoice(req, res) {
         res.status(500).json({ message: "Failed to process invoice", error: error.message });
     }
 }
+
+async function addOrUpdateCommission({ emp_id, date, commission, t }) {
+    // Truncate time to ensure comparisons are done on date only
+    const transactionDate = moment(date).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+
+    console.log(`Looking for commission with emp_id: ${emp_id}, date: ${transactionDate}`);
+
+    const existingCommission = await models.Commission.findOne({
+        where: {
+            emp_id: emp_id,
+            date: {
+                [Op.between]: [
+                    moment(transactionDate).startOf('day').toDate(),
+                    moment(transactionDate).endOf('day').toDate()
+                ]
+            }
+        },
+        transaction: t
+    });
+
+    if (existingCommission) {
+        console.log(`Existing commission found for date ${transactionDate}. Current commission: ${existingCommission.commission}, Additional: ${commission}`);
+
+        // Ensure the update is calculated correctly
+        existingCommission.commission = parseFloat(existingCommission.commission) + parseFloat(commission);
+        await existingCommission.save({ transaction: t });
+
+        console.log(`Commission updated to ${existingCommission.commission}`);
+
+        return existingCommission;
+    } else {
+        console.log(`No existing commission found for emp_id: ${emp_id} on date: ${transactionDate}. Creating new record.`);
+
+        const newCommission = await models.Commission.create({
+            emp_id,
+            date: transactionDate,
+            commission: parseFloat(commission)
+        }, { transaction: t });
+
+        return newCommission;
+    }
+}
+
+
 
 async function getTotalOutstandingAmount(clientId, transaction) {
     const invoices = await models.Invoice.findAll({
@@ -147,7 +210,7 @@ async function settleOldInvoices(clientId, allocatedAmount, employeeId, paymentO
             reference_number: invoice.reference_number,
             amount: amountToApply,
             payment_option: paymentOption,
-            employee_id: employeeId, // Ensure variable name is correctly used here
+            employee_id: employeeId, 
             bank,
             cheque_number: chequeNumber,
             cheque_date: chequeDate,
