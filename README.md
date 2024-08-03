@@ -26,7 +26,7 @@ In the root directory of the project, create a file called nodemon.json and add 
         	"DB_DATABASE": "order_processing_system",
         	"DB_HOST": "127.0.0.1",
         	"DB_DIALECT": "mysql"
-    		}
+ 		}
 	}
 
 03. Install Dependencies
