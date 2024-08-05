@@ -35,11 +35,16 @@ In the root directory of the project, create a file called nodemon.json and add 
 	```bash
 	npm install
 
-03. Start the Server
+04. Install Dependencies
 	```bash
-	npm start
+	npm install
 
-04. Verify the Setup<br>
+05. Run the Seeder<br>
+Add your admin details to `create-admin` seeder, save it and run seeder. 
+	```bash
+	sequelize db:seed:all
+
+06. Verify the Setup<br>
 Open your browser and navigate to `http://localhost:4000`. You should see a message indicating that the server is working!
 
 ## Related Repositories
